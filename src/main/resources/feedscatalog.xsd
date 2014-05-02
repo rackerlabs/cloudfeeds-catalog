@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           elementFormDefault="qualified" 
+           targetNamespace="http://docs.rackspace.com/cloudfeeds/catalog" 
+           xmlns:catalog="http://docs.rackspace.com/cloudfeeds/catalog">
+  <xs:element name="feedCatalog">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="catalog:feed"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="feed">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="catalog:endpoint"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="endpoint">
+    <xs:complexType>
+      <xs:attribute name="publicURL" use="required" type="xs:anyURI"/>
+      <xs:attribute name="region" use="required"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

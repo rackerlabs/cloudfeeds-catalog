@@ -1,0 +1,13 @@
+## intellij stuff
+.idea/
+
+*~
+*.DS_Store
+*.iml
+*.ipr
+*.iws
+*.project
+target
+.classpath
+.settings
+
