@@ -8,11 +8,6 @@
     <description>Servlet that serves up static feeds catalog files</description>
 
     <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>file:///etc/feedscatalog/application-context.xml</param-value>
-    </context-param>
-
-    <context-param>
         <param-name>log4jConfigLocation</param-name>
         <param-value>/WEB-INF/log4j.xml</param-value>
     </context-param>
@@ -29,6 +24,14 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>feedscatalog</servlet-name>
-        <url-pattern>/feedscatalog/*</url-pattern>
+        <url-pattern>/catalog/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>feedscatalog</servlet-name>
+        <url-pattern>/catalog</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/xml/*</url-pattern>
     </servlet-mapping>
 </web-app>
