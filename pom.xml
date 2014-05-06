@@ -40,13 +40,13 @@
     </distributionManagement>
 
     <properties>
-        <junit.version>4.10</junit.version>
+        <junit.version>4.11</junit.version>
         <saxon-ee.version>9.4.0.6</saxon-ee.version>
-        <mockito.version>1.9.0</mockito.version>
+        <mockito.version>1.9.5</mockito.version>
         <xmlsec.version>1.4.6</xmlsec.version>
-        <surefire-plugin.version>2.12.3</surefire-plugin.version>
+        <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>4.0.3.RELEASE</org.springframework.version>
-        <usage-schema.version>1.48.2</usage-schema.version>
+        <usage-schema.version>1.49.0</usage-schema.version>
     </properties>
 
     <dependencies>
@@ -124,6 +124,26 @@
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <id>update-usage-schema</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>update-properties</goal>
+                        </goals>
+                        <configuration>
+                            <includeProperties>usage-schema.version</includeProperties>
+                            <properties>
+                                <property><name>usage-schema.version</name></property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.8</version>
@@ -149,10 +169,20 @@
                         </configuration>
                     </execution>
                 </executions>
+                <!--
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>versions-maven-plugin</artifactId>
+                        <version>2.1</version>
+                    </dependency>
+                </dependencies>
+                -->
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
+                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>generate-feed-catalog</id>
@@ -186,6 +216,10 @@
                                     <name>generateTenantId</name>
                                     <value>false</value>
                                 </parameter>
+                                <parameter>
+                                    <name>usageSchemaVers</name>
+                                    <value>${usage-schema.version}</value>
+                                </parameter>
                             </parameters>
                         </transformationSet>
                         <transformationSet>
@@ -210,6 +244,10 @@
                                 <parameter>
                                     <name>generateTenantId</name>
                                     <value>true</value>
+                                </parameter>
+                                <parameter>
+                                    <name>usageSchemaVers</name>
+                                    <value>${usage-schema.version}</value>
                                 </parameter>
                             </parameters>
                         </transformationSet>
@@ -269,6 +307,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
                 <configuration>
                     <failOnMissingWebXml>true</failOnMissingWebXml>
                     <webResources>

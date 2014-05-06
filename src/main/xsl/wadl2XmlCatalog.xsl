@@ -15,9 +15,11 @@
         encoding="UTF-8" 
         indent="yes"/>   
     <xsl:param name="generateTenantId" as="xs:string"/>
+    <xsl:param name="usageSchemaVers" as="xs:string"/>
     <xsl:strip-space elements="*"/>
     <xsl:template match="/wadl:application/wadl:resources">
         <feedCatalog>
+            <version><xsl:value-of select="$usageSchemaVers"/></version>
             <!-- take the resources base URL -->
             <xsl:apply-templates select="*" mode="expand">
                 <xsl:with-param name="base" select="@base"/>
