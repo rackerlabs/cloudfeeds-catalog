@@ -1,0 +1,24 @@
+#!/bin/sh
+
+usage()
+{
+    echo "Usage: `basename $0` <json file>*"
+    exit 1
+}
+
+if [ $# -lt 1 ]; then
+    echo "Error: missing argument"
+    usage
+fi
+
+for fl in $*
+do
+    if [ ! -f ${fl} ]; then
+        echo "Error: file not found: ${fl}, skipping"
+        continue
+    fi
+    python -mjson.tool ${fl} > ${fl}.$$
+    cp ${fl}.$$ ${fl}
+    rm -rf ${fl}.$$
+done
+exit 0

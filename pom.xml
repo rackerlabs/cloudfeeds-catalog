@@ -14,7 +14,7 @@
     </description>
 
     <scm>
-        <connection>scm:git:ssh://git@github.rackspace.com/atom-hopper-team/feedscatalog.git</connection>
+        <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
     </scm>
 
     <repositories>
@@ -40,13 +40,13 @@
     </distributionManagement>
 
     <properties>
-        <junit.version>4.10</junit.version>
+        <junit.version>4.11</junit.version>
         <saxon-ee.version>9.4.0.6</saxon-ee.version>
-        <mockito.version>1.9.0</mockito.version>
+        <mockito.version>1.9.5</mockito.version>
         <xmlsec.version>1.4.6</xmlsec.version>
-        <surefire-plugin.version>2.12.3</surefire-plugin.version>
+        <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>4.0.3.RELEASE</org.springframework.version>
-        <usage-schema.version>1.48.2</usage-schema.version>
+        <usage-schema.version>1.49.0</usage-schema.version>
     </properties>
 
     <dependencies>
@@ -124,6 +124,26 @@
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <id>update-usage-schema</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>update-properties</goal>
+                        </goals>
+                        <configuration>
+                            <includeProperties>usage-schema.version</includeProperties>
+                            <properties>
+                                <property><name>usage-schema.version</name></property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.8</version>
@@ -149,10 +169,20 @@
                         </configuration>
                     </execution>
                 </executions>
+                <!--
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>versions-maven-plugin</artifactId>
+                        <version>2.1</version>
+                    </dependency>
+                </dependencies>
+                -->
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>xml-maven-plugin</artifactId>
+                <version>1.0</version>
                 <executions>
                     <execution>
                         <id>generate-feed-catalog</id>
@@ -186,6 +216,10 @@
                                     <name>generateTenantId</name>
                                     <value>false</value>
                                 </parameter>
+                                <parameter>
+                                    <name>usageSchemaVers</name>
+                                    <value>${usage-schema.version}</value>
+                                </parameter>
                             </parameters>
                         </transformationSet>
                         <transformationSet>
@@ -210,6 +244,10 @@
                                 <parameter>
                                     <name>generateTenantId</name>
                                     <value>true</value>
+                                </parameter>
+                                <parameter>
+                                    <name>usageSchemaVers</name>
+                                    <value>${usage-schema.version}</value>
                                 </parameter>
                             </parameters>
                         </transformationSet>
@@ -269,14 +307,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
                 <configuration>
                     <failOnMissingWebXml>true</failOnMissingWebXml>
                     <webResources>
                         <resource>
                             <directory>${basedir}/target/generated-resources/feedscatalog/xml</directory>
-                            <targetPath>catalog/</targetPath>
+                            <targetPath>xml/</targetPath>
                         </resource>
                     </webResources>
+                    <warName>feedscatalog-${project.version}</warName>
                 </configuration>
                 <executions>
                     <execution>
@@ -304,7 +344,7 @@
     </build>
     <profiles>
         <profile>
-            <id>build-rpm</id>
+            <id>build-app-rpm</id>
             <build>
                 <plugins>
                     <plugin>
@@ -354,10 +394,39 @@
                         <version>2.1-alpha-1</version>
                         <executions>
                             <execution>
-                                <id>Build RPM</id>
+                                <id>build-app-rpm</id>
                                 <goals>
                                     <goal>attached-rpm</goal>
                                 </goals>
+                                <configuration>
+                                    <name>feedscatalog-app</name>
+        		            <mappings>
+                                        <mapping>
+                                            <directory>/srv/tomcat/webapps</directory>
+                                            <username>tomcat</username>
+                                            <groupname>tomcat</groupname>
+                                            <filemode>644</filemode>
+                                            <directoryIncluded>false</directoryIncluded>
+                                            <sources>
+                                                <source>
+                                                    <location>target/feedscatalog-${project.version}.war</location>
+                                                    <!--
+                                                        If you already have a ROOT.war and wish to keep it
+                                                        then remove the following destination completely
+                                                    -->
+                                                    <destination>feedscatalog-${project.version}.war</destination>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+        		            </mappings>
+                                    <postremoveScriplet>
+                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog-${project.version}.war"</script>
+                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog-${project.version}"</script>
+                                    </postremoveScriplet>
+                                    <requires>
+                                        <require>tomcat7</require>
+                                    </requires>
+                                </configuration>
                             </execution>
                         </executions>
                         <configuration>
@@ -365,16 +434,68 @@
                             <group>Applications/Communications</group>
                             <packager>Rackspace - Cloud Integration Team</packager>
                             <description>Feeds Catalog</description>
-                            <prefix>/srv/tomcat</prefix>
-                            <release>1</release>
-		            <mappings/>
-                            <requires>
-                                <require>tomcat7</require>
-                            </requires>
+                            <!--<release>1</release>-->
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-      </profiles>
+        <profile>
+            <id>build-xslt-rpm</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>rpm-maven-plugin</artifactId>
+                        <version>2.1-alpha-1</version>
+                        <executions>
+                            <execution>
+                                <id>build-xslt-rpm</id>
+                                <goals>
+                                    <goal>attached-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <name>feedscatalog-xslt</name>
+        		            <mappings>
+                                        <mapping>
+                                            <directory>/etc/repose/feedscatalog</directory>
+                                            <username>repose</username>
+                                            <groupname>repose</groupname>
+                                            <filemode>755</filemode>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/etc/repose/feedscatalog</directory>
+                                            <username>repose</username>
+                                            <groupname>repose</groupname>
+                                            <filemode>644</filemode>
+                                            <directoryIncluded>false</directoryIncluded>
+                                            <sources>
+                                                <source>
+                                                    <location>${basedir}/src/main/xsl/feedscatalog-resolve.xsl</location>
+                                                    <destination>feedscatalog-resolve.xsl</destination>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+        		            </mappings>
+                                    <postremoveScriplet>
+                                        <script>rm -rf "/etc/repose/feedscatalog"</script>
+                                    </postremoveScriplet>
+                                    <requires>
+                                        <require>repose-valve</require>
+                                    </requires>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <copyright>Apache License, Version 2.0</copyright>
+                            <group>Applications/Communications</group>
+                            <packager>Rackspace - Cloud Integration Team</packager>
+                            <description>Feeds Catalog</description>
+                            <release>1</release>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

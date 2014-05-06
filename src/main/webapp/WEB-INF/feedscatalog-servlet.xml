@@ -35,7 +35,7 @@
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="contentType" value="application/xml"/>
-        <property name="prefix" value="/catalog/"/>
+        <property name="prefix" value="/xml/"/>
         <property name="suffix" value=".xml"/>
     </bean>
 

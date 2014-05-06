@@ -15,9 +15,11 @@
         encoding="UTF-8" 
         indent="yes"/>   
     <xsl:param name="generateTenantId" as="xs:string"/>
+    <xsl:param name="usageSchemaVers" as="xs:string"/>
     <xsl:strip-space elements="*"/>
     <xsl:template match="/wadl:application/wadl:resources">
         <feedCatalog>
+            <version><xsl:value-of select="$usageSchemaVers"/></version>
             <!-- take the resources base URL -->
             <xsl:apply-templates select="*" mode="expand">
                 <xsl:with-param name="base" select="@base"/>
@@ -25,7 +27,7 @@
         </feedCatalog>
     </xsl:template>
     
-    <xsl:template match="wadl:resource[@id != 'buildinfo' and @id != 'logtest' and @id != 'evict-me']" mode="expand">
+    <xsl:template match="wadl:resource[@id != 'buildinfo' and @id != 'logtest' and @id != 'evict-me' and @id != 'feedscatalog']" mode="expand">
         <xsl:param name="base"></xsl:param>
         <xsl:variable name="path" select="@path"/>
         <xsl:variable name="parent_path">
