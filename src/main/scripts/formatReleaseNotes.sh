@@ -23,7 +23,7 @@ if [ $# -ge 1 ]; then
 fi
 
 # first weed out the non-relevant comments
-grep 'Usage Schema\|R00\|usage-schema-\|[BD]-[0-9][0-9][0-9][0-9][0-9]\|^$' ${CHANGELOG_MD} > $$.out
+grep 'Feeds Catalog\|R00\|feedscatalog-\|[BD]-[0-9][0-9][0-9][0-9][0-9]\|^$' ${CHANGELOG_MD} > $$.out
 
 # format is like this:
 # 2013-10-15 12:00:12 -0500    B-40572: remove SSL transformation on LBaaS usage event (Shinta Smith)
