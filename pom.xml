@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Feeds Catalog</name>
@@ -397,7 +397,8 @@
                                     <goal>attached-rpm</goal>
                                 </goals>
                                 <configuration>
-                                    <name>feedscatalog-app</name>
+                                    <classifier>app</classifier>
+                                    <name>feedscatalog</name>
         		            <mappings>
                                         <mapping>
                                             <directory>/srv/tomcat/webapps</directory>
@@ -453,7 +454,8 @@
                                     <goal>attached-rpm</goal>
                                 </goals>
                                 <configuration>
-                                    <name>feedscatalog-xslt</name>
+                                    <classifier>xslt</classifier>
+                                    <name>feedscatalog</name>
         		            <mappings>
                                         <mapping>
                                             <directory>/etc/repose/feedscatalog</directory>
