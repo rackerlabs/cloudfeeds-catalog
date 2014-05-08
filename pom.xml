@@ -45,6 +45,9 @@
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>4.0.3.RELEASE</org.springframework.version>
         <usage-schema.version>1.49.0</usage-schema.version>
+        <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
+        <!-- this is required by rpm-maven-plugin -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -167,15 +170,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <!--
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>versions-maven-plugin</artifactId>
-                        <version>2.1</version>
-                    </dependency>
-                </dependencies>
-                -->
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -389,7 +383,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>rpm-maven-plugin</artifactId>
-                        <version>2.1-alpha-1</version>
+                        <version>${rpm-maven-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>build-app-rpm</id>
@@ -397,8 +391,7 @@
                                     <goal>attached-rpm</goal>
                                 </goals>
                                 <configuration>
-                                    <classifier>app</classifier>
-                                    <name>feedscatalog</name>
+                                    <name>feedscatalog-app</name>
         		            <mappings>
                                         <mapping>
                                             <directory>/srv/tomcat/webapps</directory>
@@ -433,7 +426,6 @@
                             <group>Applications/Communications</group>
                             <packager>Rackspace - Cloud Integration Team</packager>
                             <description>Feeds Catalog</description>
-                            <!--<release>1</release>-->
                         </configuration>
                     </plugin>
                 </plugins>
@@ -446,7 +438,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>rpm-maven-plugin</artifactId>
-                        <version>2.1-alpha-1</version>
+                        <version>${rpm-maven-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>build-xslt-rpm</id>
@@ -454,8 +446,8 @@
                                     <goal>attached-rpm</goal>
                                 </goals>
                                 <configuration>
+                                    <name>feedscatalog-xslt</name>
                                     <classifier>xslt</classifier>
-                                    <name>feedscatalog</name>
         		            <mappings>
                                         <mapping>
                                             <directory>/etc/repose/feedscatalog</directory>
@@ -481,7 +473,7 @@
                                         <script>rm -rf "/etc/repose/feedscatalog"</script>
                                     </postremoveScriplet>
                                     <requires>
-                                        <require>repose-valve</require>
+                                        <require>repose</require>
                                     </requires>
                                 </configuration>
                             </execution>
@@ -491,7 +483,6 @@
                             <group>Applications/Communications</group>
                             <packager>Rackspace - Cloud Integration Team</packager>
                             <description>Feeds Catalog</description>
-                            <release>1</release>
                         </configuration>
                     </plugin>
                 </plugins>
