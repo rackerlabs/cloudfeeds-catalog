@@ -392,6 +392,7 @@
                                 </goals>
                                 <configuration>
                                     <name>feedscatalog-app</name>
+                                    <classifier>app</classifier>
         		            <mappings>
                                         <mapping>
                                             <directory>/srv/tomcat/webapps</directory>
