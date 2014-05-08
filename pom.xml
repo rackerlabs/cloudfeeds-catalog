@@ -403,18 +403,13 @@
                                             <sources>
                                                 <source>
                                                     <location>target/feedscatalog-${project.version}.war</location>
-                                                    <!--
-                                                        If you already have a ROOT.war and wish to keep it
-                                                        then remove the following destination completely
-                                                    -->
-                                                    <destination>feedscatalog-${project.version}.war</destination>
+                                                    <destination>feedscatalog.war</destination>
                                                 </source>
                                             </sources>
                                         </mapping>
         		            </mappings>
                                     <postremoveScriplet>
-                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog-${project.version}.war"</script>
-                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog-${project.version}"</script>
+                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog.war"</script>
                                     </postremoveScriplet>
                                     <requires>
                                         <require>tomcat7</require>
