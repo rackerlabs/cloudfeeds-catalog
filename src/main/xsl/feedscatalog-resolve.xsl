@@ -15,7 +15,6 @@
   <xsl:variable name="requestDoc" select="doc($input-request-uri)"/>
   
   <xsl:output method="xml" indent="yes"/>
-  <xsl:strip-space elements="*"/>
   
   <xsl:variable name="tenantId">
     <xsl:call-template name="getTenantId">
