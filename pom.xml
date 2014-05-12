@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Feeds Catalog</name>
