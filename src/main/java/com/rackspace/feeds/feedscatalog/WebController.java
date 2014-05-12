@@ -15,7 +15,7 @@ public class WebController {
         return "atom_hopper_observer";
     }
 
-    @RequestMapping(value = "/catalog", method = RequestMethod.GET)
+    @RequestMapping(value = "/.*", method = RequestMethod.GET)
     public String cfserviceadmin(ModelMap model) {
         return "atom_hopper_identity_admin";
     }
