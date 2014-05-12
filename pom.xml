@@ -146,26 +146,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-scm-plugin</artifactId>
-                <version>1.8.1</version>
-                <executions>
-                    <execution>
-                        <id>checkin-new-pom</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>checkin</goal>
-                        </goals>
-                        <configuration>
-                            <connectionType>connection</connectionType>
-                            <message>update version of usage-schema</message>
-                            <includes>${basedir}/pom.xml</includes>
-                            <pushChanges>true</pushChanges>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.8</version>
                 <executions>
