@@ -30,7 +30,7 @@ grep 'Feeds Catalog\|R00\|feedscatalog-\|[BD]-[0-9][0-9][0-9][0-9][0-9]\|^$' ${C
 # \1   \2 \3 \4        \5      \6     \7                                               
 
 sed "s/\(.*\)-\(.*\)-\(.*\) \(.*\) -\([0-9 ]*\)\(.*\)\([BD]\)-\(.*\)/\1-\2-\3 | \6\7-\8/" $$.out > $$.out.2
-sed "s/# Changelog for Usage Schema\(.*\)/# Changelog for Usage Schema/" $$.out.2 > $$.out
+sed "s/# Changelog for Feeds Catalog\(.*\)/# Changelog for Feeds Catalog/" $$.out.2 > $$.out
 
 if [ ! -z ${OUTPUT_FILE} ]; then
     cp $$.out ${OUTPUT_FILE}
