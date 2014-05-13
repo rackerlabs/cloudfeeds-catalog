@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class WebController {
 
-    @RequestMapping(value = "/{tenantId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/catalog/{tenantId}", method = RequestMethod.GET)
     public String observer(@PathVariable String tenantId, ModelMap model) {
         model.addAttribute("tenantId", tenantId);
         return "atom_hopper_observer";
     }
 
-    @RequestMapping(value = "/.*", method = RequestMethod.GET)
+    @RequestMapping(value = "/catalog", method = RequestMethod.GET)
     public String cfserviceadmin(ModelMap model) {
         return "atom_hopper_identity_admin";
     }

@@ -26,7 +26,7 @@
   <xsl:template name="getTenantId">
     <xsl:param name="uri"/>
     <xsl:analyze-string select="$uri"
-                        regex="^/feedscatalog/catalog/(.*)">
+                        regex="^/feedscatalog/catalog/([^/?]+)/?">
       <xsl:matching-substring>
         <xsl:value-of select="regex-group(1)"/>
       </xsl:matching-substring>

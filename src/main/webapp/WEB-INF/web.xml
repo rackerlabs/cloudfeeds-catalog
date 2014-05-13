@@ -23,16 +23,12 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>feedscatalog</servlet-name>
-        <url-pattern>/catalog/*</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>feedscatalog</servlet-name>
-        <url-pattern>/catalog</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>default</servlet-name>
         <url-pattern>/xml/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>feedscatalog</servlet-name>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
     <mime-mapping>
         <extension>xml</extension>
