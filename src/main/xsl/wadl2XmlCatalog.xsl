@@ -27,7 +27,7 @@
         </feedCatalog>
     </xsl:template>
     
-    <xsl:template match="wadl:resource[@id != 'buildinfo' and @id != 'logtest' and @id != 'evict-me' and @id != 'feedscatalog']" mode="expand">
+    <xsl:template match="wadl:resource[@id != 'buildinfo' and @id != 'logtest' and @id != 'evict-me' and @id != 'feedscatalog' and not(matches(@path,'.*test[0-9]*/events')) ]" mode="expand">
         <xsl:param name="base"></xsl:param>
         <xsl:variable name="path" select="@path"/>
         <xsl:variable name="parent_path">
