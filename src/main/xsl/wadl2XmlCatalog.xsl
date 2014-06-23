@@ -21,7 +21,7 @@
         <feedCatalog>
             <version><xsl:value-of select="$usageSchemaVers"/></version>
             <!-- take the resources base URL -->
-            <xsl:apply-templates select="*" mode="expand">
+            <xsl:apply-templates select="wadl:resource/*" mode="expand">
                 <xsl:with-param name="base" select="@base"/>
             </xsl:apply-templates>
         </feedCatalog>
@@ -32,7 +32,7 @@
         <xsl:variable name="path" select="@path"/>
         <xsl:variable name="parent_path">
             <xsl:choose>
-                <xsl:when test="ancestor::wadl:resource/@path"><xsl:value-of select="concat(ancestor::wadl:resource/@path,'/')"/></xsl:when>
+                <xsl:when test="parent::wadl:resource/@path"><xsl:value-of select="concat(parent::wadl:resource/@path,'/')"/></xsl:when>
                 <xsl:otherwise/>                
             </xsl:choose>    
         </xsl:variable>

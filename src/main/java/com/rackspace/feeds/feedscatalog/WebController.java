@@ -12,12 +12,12 @@ public class WebController {
     @RequestMapping(value = "/catalog/{tenantId}", method = RequestMethod.GET)
     public String observer(@PathVariable String tenantId, ModelMap model) {
         model.addAttribute("tenantId", tenantId);
-        return "atom_hopper_observer";
+        return "allfeeds_observer";
     }
 
     @RequestMapping(value = "/catalog", method = RequestMethod.GET)
     public String cfserviceadmin(ModelMap model) {
-        return "atom_hopper_identity_admin";
+        return "allfeeds";
     }
 
 }

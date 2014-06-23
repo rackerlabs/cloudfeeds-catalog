@@ -188,7 +188,7 @@
                         <transformationSet>
                             <dir>${project.build.directory}/usage-schema/usage-schema-${usage-schema.version}</dir>
                             <includes>
-                                <include>atom_hopper_identity_admin.wadl</include>
+                                <include>allfeeds.wadl</include>
                             </includes>
                             <stylesheet>${basedir}/src/main/xsl/wadl2XmlCatalog.xsl</stylesheet>
                             <outputDir>${project.build.directory}/generated-resources/feedscatalog/xml</outputDir>
@@ -217,7 +217,7 @@
                         <transformationSet>
                             <dir>${project.build.directory}/usage-schema/usage-schema-${usage-schema.version}</dir>
                             <includes>
-                                <include>atom_hopper_observer.wadl</include>
+                                <include>allfeeds_observer.wadl</include>
                             </includes>
                             <stylesheet>${basedir}/src/main/xsl/wadl2XmlCatalog.xsl</stylesheet>
                             <outputDir>${project.build.directory}/generated-resources/feedscatalog/xml</outputDir>
@@ -247,8 +247,8 @@
                         <transformationSet>
                             <dir>${project.build.directory}/generated-resources/feedscatalog/xml</dir>
                             <includes>
-                                <include>atom_hopper_identity_admin.xml</include>
-                                <include>atom_hopper_observer.xml</include>
+                                <include>allfeeds.xml</include>
+                                <include>allfeeds_observer.xml</include>
                             </includes>
                             <stylesheet>${basedir}/src/main/xsl/wadl2JsonCatalog.xsl</stylesheet>
                             <outputDir>${project.build.directory}/generated-resources/feedscatalog/json</outputDir>
@@ -288,8 +288,8 @@
                         <configuration>
                             <executable>${basedir}/src/main/scripts/pretty-print-json</executable>
                             <arguments>
-                                <argument>${project.build.directory}/generated-resources/feedscatalog/json/atom_hopper_identity_admin.json</argument>
-                                <argument>${project.build.directory}/generated-resources/feedscatalog/json/atom_hopper_identity_admin.json</argument>
+                                <argument>${project.build.directory}/generated-resources/feedscatalog/json/allfeeds.json</argument>
+                                <argument>${project.build.directory}/generated-resources/feedscatalog/json/allfeeds.json</argument>
                             </arguments>
                         </configuration>
                     </execution>
