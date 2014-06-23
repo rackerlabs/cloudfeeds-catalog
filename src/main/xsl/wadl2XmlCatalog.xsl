@@ -32,7 +32,7 @@
         <xsl:variable name="path" select="@path"/>
         <xsl:variable name="parent_path">
             <xsl:choose>
-                <xsl:when test="parent::wadl:resource/@path"><xsl:value-of select="concat(parent::wadl:resource/@path,'/')"/></xsl:when>
+                <xsl:when test="parent::wadl:resource/@path"><xsl:value-of select="parent::wadl:resource/@path"/></xsl:when>
                 <xsl:otherwise/>                
             </xsl:choose>    
         </xsl:variable>
