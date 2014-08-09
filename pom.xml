@@ -147,7 +147,6 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-        <!--<testSourceDirectory>src/test/java</testSourceDirectory>-->
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
