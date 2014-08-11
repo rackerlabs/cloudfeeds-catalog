@@ -42,7 +42,7 @@
   <xsl:param name="environment" select="document('/etc/feedscatalog/feedscatalog.xml')"/>
   
   <xsl:template xmlns:app="http://www.w3.org/2007/app"
-    match="/service/workspace/collection/@href">
+    match="/app:service/app:workspace/app:collection/@href">
     <xsl:variable name="newURL"><xsl:value-of select="replace(current(), '\$\{tenantId\}', $tenantId)"/></xsl:variable>
     <xsl:attribute name="href"><xsl:value-of select="replace($newURL, 'http://localhost', $environment/environment/vipURL/text())"/></xsl:attribute>
   </xsl:template>
