@@ -41,19 +41,9 @@
   
   <xsl:param name="environment" select="document('/etc/feedscatalog/feedscatalog.xml')"/>
   
-  <xsl:template xmlns:cfc="http://docs.rackspace.com/cloudfeeds/catalog" 
-    match="@region[parent::cfc:endpoint]">
-    <xsl:attribute name="region"><xsl:value-of select="$environment/environment/region/text()"/></xsl:attribute>
-  </xsl:template>
-  
-  <xsl:template xmlns:cfc="http://docs.rackspace.com/cloudfeeds/catalog" 
-    match="@tenantId[parent::cfc:endpoint]">
-    <xsl:attribute name="tenantId"><xsl:value-of select="$tenantId"/></xsl:attribute>
-  </xsl:template>
-  
-  <xsl:template xmlns:cfc="http://docs.rackspace.com/cloudfeeds/catalog" 
-    match="@publicURL[parent::cfc:endpoint]">
-    <xsl:variable name="newPublicURL"><xsl:value-of select="replace(current(), '\$\{tenantId\}', $tenantId)"/></xsl:variable>
-    <xsl:attribute name="publicURL"><xsl:value-of select="replace($newPublicURL, 'http://localhost', $environment/environment/vipURL/text())"/></xsl:attribute>
+  <xsl:template xmlns:app="http://www.w3.org/2007/app"
+    match="/app:service/app:workspace/app:collection/@href">
+    <xsl:variable name="newURL"><xsl:value-of select="replace(current(), '\$\{tenantId\}', $tenantId)"/></xsl:variable>
+    <xsl:attribute name="href"><xsl:value-of select="replace($newURL, 'http://localhost', $environment/environment/vipURL/text())"/></xsl:attribute>
   </xsl:template>
 </xsl:stylesheet>
