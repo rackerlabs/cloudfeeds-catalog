@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
-    <version>1.0.36-SNAPSHOT</version>
+    <version>1.0.36</version>
     <packaging>war</packaging>
 
     <name>Feeds Catalog</name>
@@ -372,7 +372,7 @@
                 <artifactId>gmaven-plugin</artifactId>
                 <version>${gmaven.version}</version>
                 <configuration>
-                    <source/>
+                    <source />
                     <providerSelection>1.8</providerSelection>
                 </configuration>
                 <dependencies>
