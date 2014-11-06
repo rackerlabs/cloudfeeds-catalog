@@ -48,7 +48,7 @@
         <xmlsec.version>1.4.6</xmlsec.version>
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>4.0.4.RELEASE</org.springframework.version>
-        <usage-schema.version>1.70.0</usage-schema.version>
+        <usage-schema.version>1.72.0</usage-schema.version>
         <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
         <!-- this is required by rpm-maven-plugin -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -241,13 +241,13 @@
                         <transformationSet>
                             <dir>${project.build.directory}/usage-schema/usage-schema-${usage-schema.version}</dir>
                             <includes>
-                                <include>allfeeds_observer.wadl</include>
+                                <include>allfeeds.wadl</include>
                             </includes>
                             <stylesheet>${basedir}/src/main/xsl/wadl2SvcDoc.xsl</stylesheet>
                             <outputDir>${project.build.directory}/generated-resources/feedscatalog/xml</outputDir>
                             <fileMappers>
-                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-                                    <targetExtension>.xml</targetExtension>
+                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                                    <targetName>allfeeds_observer.xml</targetName>
                                 </fileMapper>
                             </fileMappers>
                             <outputProperties>

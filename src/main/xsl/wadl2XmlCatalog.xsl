@@ -21,7 +21,7 @@
         <feedCatalog>
             <version><xsl:value-of select="$usageSchemaVers"/></version>
             <!-- take the resources base URL -->
-            <xsl:apply-templates select="wadl:resource/*" mode="expand">
+            <xsl:apply-templates select="wadl:resource" mode="expand">
                 <xsl:with-param name="base" select="@base"/>
             </xsl:apply-templates>
         </feedCatalog>
@@ -32,27 +32,30 @@
                          and not(matches(@path,'\{usagetestid\}/events')) ]" mode="expand">
         <xsl:param name="base"></xsl:param>
         <xsl:variable name="path" select="@path"/>
+        <xsl:variable name="isTenantFeed" select="contains( @type, 'wadl/feed.wadl#TenantAtomFeed') or contains( @type, 'TenantFeedsCatalog')"/>
         <xsl:variable name="parent_path">
             <xsl:choose>
                 <xsl:when test="parent::wadl:resource/@path"><xsl:value-of select="parent::wadl:resource/@path"/></xsl:when>
                 <xsl:otherwise/>                
             </xsl:choose>    
         </xsl:variable>
-        <xsl:element name="feed">
-            <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
-            <xsl:element name="endpoint">
-                <xsl:attribute name="region">${region}</xsl:attribute>
-                <xsl:choose>
-                    <xsl:when test="$generateTenantId = 'true'">
-                        <xsl:attribute name="tenantId">${tenantId}</xsl:attribute>
-                        <xsl:attribute name="publicURL"><xsl:value-of select="concat($base,$parent_path,$path,'/${tenantId}')"/></xsl:attribute>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:attribute name="publicURL"><xsl:value-of select="concat($base,$parent_path,$path)"/></xsl:attribute>
-                    </xsl:otherwise>
-                </xsl:choose>
+        <xsl:if test="($generateTenantId = 'true' and $isTenantFeed) or $generateTenantId = 'false' ">
+            <xsl:element name="feed">
+                <xsl:attribute name="id"><xsl:value-of select="@id"/></xsl:attribute>
+                <xsl:element name="endpoint">
+                    <xsl:attribute name="region">${region}</xsl:attribute>
+                    <xsl:choose>
+                        <xsl:when test="$generateTenantId = 'true'">
+                            <xsl:attribute name="tenantId">${tenantId}</xsl:attribute>
+                            <xsl:attribute name="publicURL"><xsl:value-of select="concat($base,$parent_path,$path,'/${tenantId}')"/></xsl:attribute>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:attribute name="publicURL"><xsl:value-of select="concat($base,$parent_path,$path)"/></xsl:attribute>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:element>
             </xsl:element>
-        </xsl:element>
+        </xsl:if>
     </xsl:template>
 
 </xsl:stylesheet>

@@ -24,24 +24,23 @@ class Wadl2SvcDocTest extends BaseTest {
         <include href="xmlschema/schema1.xsd"/>
         <include href="xmlschema/schema2.xsd"/>
     </grammars>
-    <resources base="http://myhost">
-        <resource id="service-admin" path="/" rax:roles="cloudfeeds:service-admin identity:admin">
+    <resources base="http://myhost/">
+        <!-- Normal Resources -->
+        <resource id="service1_id"
+                  path="service1/path"
+                  type="wadl/child.wadl#Type1 wadl/feed.wadl#TenantAtomFeed"/>
+        <resource id="service2_id"
+                  path="service2/path"
+                  type="wadl/child.wadl#Type2 wadl/feed.wadl#TenantFeedsCatalog"/>
+        <resource id="service4_id"
+                  path="service4/path"
+                  type="wadl/child.wadl#Type4"/>
 
-            <!-- Normal Resources -->
-            <resource id="service1_id"
-                      path="service1/path"
-                      type="wadl/child.wadl#Type1"/>
-            <resource id="service2_id"
-                      path="service2/path"
-                      type="wadl/child.wadl#Type2"/>
-
-            <!-- Nested Resources -->
-            <resource path="/nested/">
-                <resource id="nested_service3_id"
-                          path="service3/path"
-                          type="wadl/child.wadl#Type3"/>
-
-            </resource>
+        <!-- Nested Resources -->
+        <resource path="nested/">
+            <resource id="nested_service3_id"
+                      path="service3/path"
+                      type="wadl/child.wadl#Type3 wadl/feed.wadl#TenantAtomFeed"/>
         </resource>
     </resources>
 </application>
@@ -83,7 +82,8 @@ class Wadl2SvcDocTest extends BaseTest {
         then:
         assert getStringValue(result, "/service/workspace[1]/collection/@href") == "http://myhost/service1/path"
         assert getStringValue(result, "/service/workspace[2]/collection/@href") == "http://myhost/service2/path"
-        assert getStringValue(result, "/service/workspace[3]/collection/@href") == "http://myhost/nested/service3/path"
+        assert getStringValue(result, "/service/workspace[3]/collection/@href") == "http://myhost/service4/path"
+        assert getStringValue(result, "/service/workspace[4]/collection/@href") == "http://myhost/nested/service3/path"
 
     }
 }
