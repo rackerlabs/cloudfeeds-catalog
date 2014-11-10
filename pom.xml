@@ -428,49 +428,6 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.github.danielflower.mavenplugins</groupId>
-                        <artifactId>maven-gitlog-plugin</artifactId>
-                        <version>1.5.0</version>
-                        <configuration>
-                            <reportTitle>Changelog for ${project.name} version ${project.version}</reportTitle>
-                            <outputDirectory>target/releasenotes</outputDirectory>
-                            <generatePlainTextChangeLog>true</generatePlainTextChangeLog>
-                            <generateMarkdownChangeLog>true</generateMarkdownChangeLog>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>generate-release-notes</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!--
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId> 
-                        <artifactId>exec-maven-plugin</artifactId> 
-                        <version>1.1.1</version> 
-                        <executions>
-                            <execution>
-                                <id>format-release-notes</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>exec</goal> 
-                                </goals>
-                                <configuration>
-                                    <executable>${basedir}/src/main/scripts/formatReleaseNotes.sh</executable> 
-                                    <arguments>
-                                        <argument>${project.build.directory}/releasenotes/changelog.md</argument>
-                                        <argument>${basedir}/releases.md</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    -->
-                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>rpm-maven-plugin</artifactId>
                         <version>${rpm-maven-plugin.version}</version>
