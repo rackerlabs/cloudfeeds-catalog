@@ -241,13 +241,13 @@
                         <transformationSet>
                             <dir>${project.build.directory}/usage-schema/usage-schema-${usage-schema.version}</dir>
                             <includes>
-                                <include>allfeeds_observer.wadl</include>
+                                <include>allfeeds.wadl</include>
                             </includes>
                             <stylesheet>${basedir}/src/main/xsl/wadl2SvcDoc.xsl</stylesheet>
                             <outputDir>${project.build.directory}/generated-resources/feedscatalog/xml</outputDir>
                             <fileMappers>
-                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-                                    <targetExtension>.xml</targetExtension>
+                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.MergeFileMapper">
+                                    <targetName>allfeeds_observer.xml</targetName>
                                 </fileMapper>
                             </fileMappers>
                             <outputProperties>
