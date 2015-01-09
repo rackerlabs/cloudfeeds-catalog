@@ -1,0 +1,43 @@
+<headers xmlns="http://openrepose.org/repose/httpx/v1.0">
+    <request>
+        <header quality="1.0" name="via" value="1.1 localhost:9090 (Repose/6.1.1.1)"/>
+        <header quality="1.0" name="x-forwarded-for" value="0:0:0:0:0:0:0:1"/>
+        <header quality="1.0" name="Host" value="localhost:9090"/>
+        <header quality="1.0" name="accept" value="application/atom+xml"/>
+        <header quality="1.0" name="x-tenant-id" value="1234567"/>
+        <header quality="1.0" name="x-tenant-id" value="MossoID_aaa1-bbb2-ccc3-ddd4-eee5"/>
+        <header quality="1.0" name="x-user-id" value="10213130"/>
+        <header quality="1.0" name="User-Agent" value="curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.16.2.3 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2"/>
+        <header quality="1.0" name="x-default-region" value="DFW"/>
+        <header quality="1.0" name="x-external-loc" value="localhost:9090"/>
+        <header quality="1.0" name="x-tenant-name" value="9999999"/>
+        <header quality="1.0" name="x-token-expires" value="Fri, 09 Jan 2099 23:23:21 GMT"/>
+        <header quality="0.2" name="x-pp-user" value="0:0:0:0:0:0:0:1"/>
+        <header quality="1.0" name="x-pp-user" value="testuser"/>
+        <header quality="1.0" name="x-roles" value="observer"/>
+        <header quality="1.0" name="x-roles" value="cloudfeeds:observer"/>
+        <header quality="1.0" name="x-roles" value="compute:default"/>
+        <header quality="1.0" name="x-roles" value="object-store:default"/>
+        <header quality="1.0" name="x-roles" value="identity:default"/>
+        <header quality="1.0" name="x-authorization" value="Proxy 5914283"/>
+        <header quality="1.0" name="x-user-name" value="testuser"/>
+        <header quality="1.0" name="X-Auth-Token" value="1000000000000000000000000000000a"/>
+        <header quality="0.2" name="x-pp-groups" value="IP_Standard"/>
+        <header quality="1.0" name="x-pp-groups" value="3814"/>
+        <header quality="1.0" name="x-pp-groups" value="observer"/>
+        <header quality="1.0" name="x-pp-groups" value="cloudfeeds:observer"/>
+        <header quality="1.0" name="x-pp-groups" value="compute:default"/>
+        <header quality="1.0" name="x-pp-groups" value="object-store:default"/>
+        <header quality="1.0" name="x-pp-groups" value="identity:default"/>
+    </request>
+    <response>
+        <header quality="1.0" name="Content-Language" value="en-US"/>
+        <header quality="1.0" name="ETag" value="WWWWWW-11111"/>
+        <header quality="1.0" name="Date" value="Fri, 09 Jan 2015 15:46:43 GMT"/>
+        <header quality="1.0" name="Content-Length" value="8198"/>
+        <header quality="1.0" name="Last-Modified" value="Wed, 07 Jan 2015 23:14:31 GMT"/>
+        <header quality="1.0" name="Via" value="1.1 Repose (Repose/6.1.1.1)"/>
+        <header quality="1.0" name="Accept-Ranges" value="bytes"/>
+        <header quality="1.0" name="Content-Type" value="application/xml;charset=UTF-8"/>
+    </response>
+</headers>

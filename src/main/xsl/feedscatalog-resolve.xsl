@@ -13,37 +13,40 @@
   <xsl:variable name="headerDoc" select="doc($input-headers-uri)"/>
   <xsl:variable name="queryDoc" select="doc($input-query-uri)"/>
   <xsl:variable name="requestDoc" select="doc($input-request-uri)"/>
-  
+
   <xsl:output method="xml" indent="yes"/>
-  
+
   <xsl:variable name="tenantId">
-    <xsl:call-template name="getTenantId">
-      <xsl:with-param name="uri"
-                      select="$requestDoc/httpx:request-information/httpx:uri"/>
-    </xsl:call-template>
+    <xsl:for-each select="$headerDoc/httpx:headers/httpx:request/httpx:header[@name='x-tenant-id']">
+      <xsl:sort select="string-length(@value)" order="ascending" data-type="number" />
+      <xsl:if test="position()=1">
+        <xsl:value-of select="@value" />
+      </xsl:if>
+    </xsl:for-each>
   </xsl:variable>
 
-  <xsl:template name="getTenantId">
-    <xsl:param name="uri"/>
-    <xsl:analyze-string select="$uri"
-                        regex="^/feedscatalog/catalog/([^/?]+)/?">
-      <xsl:matching-substring>
-        <xsl:value-of select="regex-group(1)"/>
-      </xsl:matching-substring>
-    </xsl:analyze-string>
-  </xsl:template>
-  
+  <xsl:variable name="nastId">
+    <xsl:for-each select="$headerDoc/httpx:headers/httpx:request/httpx:header[@name='x-tenant-id']">
+      <xsl:sort select="string-length(@value)" order="descending" data-type="number" />
+      <xsl:if test="position()=1">
+        <xsl:value-of select="@value" />
+      </xsl:if>
+    </xsl:for-each>
+  </xsl:variable>
+
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
-  
+
   <xsl:param name="environment" select="document('/etc/feedscatalog/feedscatalog.xml')"/>
-  
+
   <xsl:template xmlns:app="http://www.w3.org/2007/app"
     match="/app:service/app:workspace/app:collection/@href">
-    <xsl:variable name="newURL"><xsl:value-of select="replace(current(), '\$\{tenantId\}', $tenantId)"/></xsl:variable>
-    <xsl:attribute name="href"><xsl:value-of select="replace($newURL, 'http://localhost', $environment/environment/vipURL/text())"/></xsl:attribute>
+    <xsl:variable name="urlWithNastId"><xsl:value-of select="replace(current(), '\$\{nastId\}', $nastId)"/></xsl:variable>
+    <xsl:variable name="urlWithTenantId"><xsl:value-of select="replace($urlWithNastId, '\$\{tenantId\}', $tenantId)"/></xsl:variable>
+    <xsl:variable name="newUrl"><xsl:value-of select="replace($urlWithTenantId, 'http://localhost', $environment/environment/vipURL/text())"/></xsl:variable>
+    <xsl:attribute name="href"><xsl:value-of select="$newUrl"/></xsl:attribute>
   </xsl:template>
 </xsl:stylesheet>

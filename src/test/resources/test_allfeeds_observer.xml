@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://www.w3.org/2007/app" xmlns:atom="http://www.w3.org/2005/Atom">
+    <workspace>
+        <atom:title>backup_events</atom:title>
+        <collection href="http://localhost/backup/events/${tenantId}">
+            <atom:title>backup_events</atom:title>
+        </collection>
+    </workspace>
+    <workspace>
+        <atom:title>bigdata_events</atom:title>
+        <collection href="http://localhost/bigdata/events/${tenantId}">
+            <atom:title>bigdata_events</atom:title>
+        </collection>
+    </workspace>
+    <workspace>
+        <atom:title>files_events</atom:title>
+        <collection href="http://localhost/files/events/${nastId}">
+            <atom:title>files_events</atom:title>
+        </collection>
+    </workspace>
+    <workspace>
+        <atom:title>files_usagesummary_events</atom:title>
+        <collection href="http://localhost/usagesummary/files/events/${nastId}">
+            <atom:title>files_usagesummary_events</atom:title>
+        </collection>
+    </workspace>
+</service>
