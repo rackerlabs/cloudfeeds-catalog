@@ -58,7 +58,6 @@
                     <xsl:attribute name="href"></xsl:attribute>
                     <xsl:choose>
                         <xsl:when test="$generateTenantId = 'true'">
-                            <!-- add test here for event = files -->
                             <xsl:choose>
                                 <xsl:when test="$isFeedUsingNastId">
                                     <xsl:attribute name="href"><xsl:value-of select="concat($base,$parent_path,$path,'/${nastId}')"/></xsl:attribute>

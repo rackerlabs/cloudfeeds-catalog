@@ -40,7 +40,14 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:param name="environment" select="document('/etc/feedscatalog/feedscatalog.xml')"/>
+  <xsl:param name="environment">
+    <xsl:choose>
+      <xsl:when test="doc-available('./src/test/resources/test_feedscatalog.xml')">
+          <xsl:copy-of select="document('./src/test/resources/test_feedscatalog.xml')"/>
+      </xsl:when>
+      <xsl:otherwise><xsl:copy-of select="document('/etc/feedscatalog/feedscatalog.xml')"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:param>
 
   <xsl:template xmlns:app="http://www.w3.org/2007/app"
     match="/app:service/app:workspace/app:collection/@href">

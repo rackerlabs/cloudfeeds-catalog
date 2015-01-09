@@ -31,16 +31,16 @@ class feedscatalogResolveTest extends BaseTest {
 
         then:
         assert getStringValue(result, "/service/workspace[1]/title") == "backup_events"
-        assert getStringValue(result, "/service/workspace[1]/collection/@href").contains("/backup/events")
+        assert getStringValue(result, "/service/workspace[1]/collection/@href") == "https://test.atom.vip/backup/events"
 
         assert getStringValue(result, "/service/workspace[2]/title") == "bigdata_events"
-        assert getStringValue(result, "/service/workspace[2]/collection/@href").contains("/bigdata/events")
+        assert getStringValue(result, "/service/workspace[2]/collection/@href") == "https://test.atom.vip/bigdata/events"
 
         assert getStringValue(result, "/service/workspace[3]/title") == "files_events"
-        assert getStringValue(result, "/service/workspace[3]/collection/@href").contains("/files/events")
+        assert getStringValue(result, "/service/workspace[3]/collection/@href") == "https://test.atom.vip/files/events"
 
         assert getStringValue(result, "/service/workspace[4]/title") == "files_usagesummary_events"
-        assert getStringValue(result, "/service/workspace[4]/collection/@href").contains("/usagesummary/files/events")
+        assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://test.atom.vip/usagesummary/files/events"
     }
 
     def "Generate feeds catalog with tenantId using feedscatalog-resolve.xsl"() {
@@ -57,15 +57,15 @@ class feedscatalogResolveTest extends BaseTest {
 
         then:
         assert getStringValue(result, "/service/workspace[1]/title") == "backup_events"
-        assert getStringValue(result, "/service/workspace[1]/collection/@href").contains("/backup/events/1234567")
+        assert getStringValue(result, "/service/workspace[1]/collection/@href") == "https://test.atom.vip/backup/events/1234567"
 
         assert getStringValue(result, "/service/workspace[2]/title") == "bigdata_events"
-        assert getStringValue(result, "/service/workspace[2]/collection/@href").contains("/bigdata/events/1234567")
+        assert getStringValue(result, "/service/workspace[2]/collection/@href") == "https://test.atom.vip/bigdata/events/1234567"
 
         assert getStringValue(result, "/service/workspace[3]/title") == "files_events"
-        assert getStringValue(result, "/service/workspace[3]/collection/@href").contains("/files/events/MossoID_aaa1-bbb2-ccc3-ddd4-eee5")
+        assert getStringValue(result, "/service/workspace[3]/collection/@href") == "https://test.atom.vip/files/events/MossoID_aaa1-bbb2-ccc3-ddd4-eee5"
 
         assert getStringValue(result, "/service/workspace[4]/title") == "files_usagesummary_events"
-        assert getStringValue(result, "/service/workspace[4]/collection/@href").contains("/usagesummary/files/events/MossoID_aaa1-bbb2-ccc3-ddd4-eee5")
+        assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://test.atom.vip/usagesummary/files/events/MossoID_aaa1-bbb2-ccc3-ddd4-eee5"
     }
 }
