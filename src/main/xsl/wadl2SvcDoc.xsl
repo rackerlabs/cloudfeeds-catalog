@@ -40,6 +40,9 @@
         <xsl:param name="base"></xsl:param>
         <xsl:variable name="path" select="@path"/>
         <xsl:variable name="isTenantFeed" select="contains( @type, 'wadl/feed.wadl#TenantAtomFeed') or contains( @type, 'TenantFeedsCatalog')"/>
+
+        <xsl:variable name="isFeedUsingNastId" select="matches( @id, 'files_events') or matches( @id, 'files_usagesummary_events')"/>
+
         <xsl:variable name="parent_path">
             <xsl:choose>
                 <xsl:when test="parent::wadl:resource/@path"><xsl:value-of select="parent::wadl:resource/@path"/></xsl:when>
@@ -55,7 +58,14 @@
                     <xsl:attribute name="href"></xsl:attribute>
                     <xsl:choose>
                         <xsl:when test="$generateTenantId = 'true'">
-                            <xsl:attribute name="href"><xsl:value-of select="concat($base,$parent_path,$path,'/${tenantId}')"/></xsl:attribute>
+                            <xsl:choose>
+                                <xsl:when test="$isFeedUsingNastId">
+                                    <xsl:attribute name="href"><xsl:value-of select="concat($base,$parent_path,$path,'/${nastId}')"/></xsl:attribute>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:attribute name="href"><xsl:value-of select="concat($base,$parent_path,$path,'/${tenantId}')"/></xsl:attribute>
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:attribute name="href"><xsl:value-of select="concat($base,$parent_path,$path)"/></xsl:attribute>

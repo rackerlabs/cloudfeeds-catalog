@@ -1,0 +1,23 @@
+<request-information xmlns="http://openrepose.org/repose/httpx/v1.0">
+    <uri>/feedscatalog/catalog/1234567</uri>
+    <url>http://0.0.0.0:9090/feedscatalog/catalog/1234567</url>
+    <informational>
+        <auth-type/>
+        <context-path/>
+        <local-addr>0:0:0:0:0:0:0:1</local-addr>
+        <local-name>0:0:0:0:0:0:0:1</local-name>
+        <local-port>9090</local-port>
+        <request-method>GET</request-method>
+        <path-info>/feedscatalog/catalog/5914283</path-info>
+        <path-translated/>
+        <protocol>HTTP/1.1</protocol>
+        <remote-addr>0:0:0:0:0:0:0:1</remote-addr>
+        <remote-host>0:0:0:0:0:0:0:1</remote-host>
+        <remote-port>37362</remote-port>
+        <remote-user/>
+        <session-id/>
+        <scheme>http</scheme>
+        <server-name>localhost</server-name>
+        <server-port>9090</server-port>
+        <servlet-path/></informational>
+</request-information>
