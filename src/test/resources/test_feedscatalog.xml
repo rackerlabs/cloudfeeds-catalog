@@ -4,6 +4,6 @@
 -->
 <environment>
     <region>DFW</region>
-    <vipURL>https://test.atom.vip</vipURL>
-    <externalVipURL>https://test.feeds.vip</externalVipURL>
+    <vipURL>https://internal.atom.vip</vipURL>
+    <externalVipURL>https://external.feeds.vip</externalVipURL>
 </environment>

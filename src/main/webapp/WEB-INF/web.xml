@@ -46,8 +46,23 @@
         </init-param>
     </filter>
 
+    <filter>
+        <filter-name>ResolveHostFilter</filter-name>
+        <filter-class>com.rackspace.feeds.feedscatalog.ResolveHostFilter</filter-class>
+        <init-param>
+            <param-name>hostFilePath</param-name>
+            <param-value>/etc/feedscatalog/feedscatalog.xml</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>ResolveHostFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <filter-mapping>
         <filter-name>Xml2JsonFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
 </web-app>
