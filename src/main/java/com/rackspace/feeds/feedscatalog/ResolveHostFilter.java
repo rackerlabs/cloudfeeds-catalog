@@ -2,109 +2,95 @@ package com.rackspace.feeds.feedscatalog;
 
 import com.rackspace.feeds.filter.OutputStreamResponseWrapper;
 import com.rackspace.feeds.filter.ServletOutputStreamWrapper;
+import com.rackspace.feeds.filter.TransformerUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 public class ResolveHostFilter implements Filter {
 
     static Logger LOG = LoggerFactory.getLogger(ResolveHostFilter.class);
-    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder documentBuilder;
-    Document doc;
+    static final String resolveHostXslt = "feedscatalog-resolve-host.xsl";
 
-    private String hostFilePath;
+    private TransformerUtils transformer;
 
     /**
      * This method is called once when the filter is first loaded.
      */
     public void init(FilterConfig filterConfig) throws ServletException {
-        LOG.debug("initializing ResolveHostFilter: resolving hostname for feeds catalog.");
-
-        hostFilePath = filterConfig.getInitParameter( "hostFilePath" );
-
-        if ( hostFilePath == null ) {
-            throw new ServletException( "hostFilePath parameter is required for this filter" );
-        }
-    }
-
-    public void doFilter (ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-
-        HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-
-        // do chain filter and obtain response content
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        ServletOutputStreamWrapper servletOutputStreamWrapper = new ServletOutputStreamWrapper(stream);
-        OutputStreamResponseWrapper wrappedResponse =
-                new OutputStreamResponseWrapper(httpServletResponse, servletOutputStreamWrapper);
-
-        filterChain.doFilter(servletRequest, wrappedResponse);
-        String originalResponseContent = stream.toString();
-
-        // resolve hostname and tenantIds in response if not empty
-        if (StringUtils.isNotEmpty(originalResponseContent)) {
-
-            // resolve hostname
-            String newResponseContent = resolveHostname(httpServletRequest, originalResponseContent);
-
-            // resolving tenantIds
-            IdsFromHeader idsFromHeader = getTenantIds(httpServletRequest);
-            newResponseContent = newResponseContent.replace("${nastId}", idsFromHeader.getNastId());
-            newResponseContent = newResponseContent.replace("${tenantId}", idsFromHeader.getTenantId());
-
-            // write new content to response output
-            httpServletResponse.setHeader("Content-Length", Integer.toString(newResponseContent.getBytes().length));
-            httpServletResponse.getOutputStream().write(newResponseContent.getBytes());
-        }
-    }
-
-    String resolveHostname(HttpServletRequest httpServletRequest, String originalResponseContent) throws ServletException {
-        String newContent;
-
-        // resolving hostname
-        File file = new File(hostFilePath);
-        if (!file.exists()) {
-            throw new ServletException("File hostFilePath does not exists at " + hostFilePath);
-        }
+        LOG.debug( "initializing ResolveHostFilter" );
 
         try {
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            doc = documentBuilder.parse(hostFilePath);
-            doc.getDocumentElement().normalize();
-        }
-        catch ( Exception e ) {
-            LOG.error( "Error loading feedscatalog.xml from: " + e.getMessage());
+            //load the resolve host xslt from resource
+            URL xsltResource = Thread.currentThread().getContextClassLoader().getResource(resolveHostXslt);
+            if (xsltResource != null) {
+                transformer = TransformerUtils.getInstanceForXsltAsFile(xsltResource.getPath());
+            }
+            else {
+                throw new UnavailableException("resource is null - " + resolveHostXslt);
+            }
+        } catch ( Exception e ) {
+            LOG.error( "Error loading xslt: " + e.getMessage());
             throw new ServletException( e );
         }
-
-        String hostname;
-        String externalLocs = httpServletRequest.getHeader("x-external-loc");
-        if (externalLocs != null && !externalLocs.isEmpty()) {
-            //request from external node, use externalVipURL
-            hostname = doc.getDocumentElement().getElementsByTagName("externalVipURL").item(0).getTextContent();
-        }
-        else {
-            //request from internal node, use vipURL
-            hostname = doc.getDocumentElement().getElementsByTagName("vipURL").item(0).getTextContent();
-        }
-        newContent = originalResponseContent.replaceAll("(?i)http://localhost", hostname);
-
-        return newContent;
     }
 
-    public void setHostFilePath(String hostFilePath) {
-        this.hostFilePath = hostFilePath;
+    public void doFilter (ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+
+        // setup wrapper response with output stream to collect transformed content
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        ServletOutputStreamWrapper outputStreamWrapper = new ServletOutputStreamWrapper(stream);
+        OutputStreamResponseWrapper wrappedResponse =
+                new OutputStreamResponseWrapper(httpServletResponse, outputStreamWrapper);
+
+        // apply filter further down the chain on wrapped response
+        chain.doFilter(httpServletRequest, wrappedResponse);
+
+        // obtain response content
+        String originalResponseContent = stream.toString();
+        LOG.debug("Original response content length = " + originalResponseContent.length());
+
+        if (StringUtils.isNotEmpty(originalResponseContent)) {
+
+            // create input params to xslt with headers from request
+            HashMap<String, Object> params = new HashMap<String, Object>();
+            putTenantIdParams(httpServletRequest, params);
+            putExternalLocParams(httpServletRequest, params);
+
+            try {
+                OutputStream outputStream = new ByteArrayOutputStream();
+
+                // transform response content with resolve host xslt
+                transformer.doTransform(params,
+                    new StreamSource(new StringReader(originalResponseContent)),
+                    new StreamResult(outputStream));
+
+                // set transformed content to response
+                String newResponseContent = outputStream.toString();
+                LOG.debug("New response content length = " + newResponseContent.length());
+                httpServletResponse.setContentLength(newResponseContent.length());
+                httpServletResponse.getWriter().write(newResponseContent);
+            }
+            catch (Exception e) {
+                LOG.error("Error transforming xml: " + e.getMessage());
+            }
+            finally {
+                httpServletResponse.getWriter().close();
+            }
+        }
     }
 
     /**
@@ -114,16 +100,14 @@ public class ResolveHostFilter implements Filter {
 
     }
 
-    IdsFromHeader getTenantIds(HttpServletRequest request) {
-        // return tenantId and nastId from header values
+    void putTenantIdParams(HttpServletRequest request, HashMap<String, Object> params) {
+        //put tenantId and nastId into the params HashMap
+        //tenantId is the shortest length value, nastId is the longest length value
         Enumeration headerValues = request.getHeaders("x-tenant-id");
         ArrayList<String> tenantIds = new ArrayList<String>();
         while (headerValues.hasMoreElements()) {
             tenantIds.add((String) headerValues.nextElement());
         }
-
-        //tenantId is the shortest length value, nastId is the longest length value from header
-        IdsFromHeader idsFromHeader = new IdsFromHeader();
 
         if (tenantIds.size() > 0) {
             String tenantId = tenantIds.get(0);
@@ -139,31 +123,16 @@ public class ResolveHostFilter implements Filter {
                 }
             }
 
-            idsFromHeader.setTenantId(tenantId);
-            idsFromHeader.setNastId(nastId);
+            params.put("tenantId", tenantId);
+            params.put("nastId", nastId);
         }
-
-        return idsFromHeader;
     }
 
-    class IdsFromHeader {
-        private String tenantId = "";
-        private String nastId = "";
-
-        public String getTenantId() {
-            return tenantId;
-        }
-
-        public void setTenantId(String tenantId) {
-            this.tenantId = tenantId;
-        }
-
-        public String getNastId() {
-            return nastId;
-        }
-
-        public void setNastId(String nastId) {
-            this.nastId = nastId;
+    void putExternalLocParams(HttpServletRequest request, HashMap<String, Object> params) {
+        //put x-external-loc header into the params HashMap if exists
+        String externalLocs = request.getHeader("x-external-loc");
+        if (externalLocs != null && !externalLocs.isEmpty()) {
+            params.put("externalLoc", externalLocs);
         }
     }
 }
