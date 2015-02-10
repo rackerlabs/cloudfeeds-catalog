@@ -38,8 +38,8 @@
     </mime-mapping>
 
     <filter>
-        <filter-name>Xml2JsonExtendedFilter</filter-name>
-        <filter-class>com.rackspace.feeds.filter.Xml2JsonExtendedFilter</filter-class>
+        <filter-name>Xml2JsonNoStreamFilter</filter-name>
+        <filter-class>com.rackspace.feeds.filter.Xml2JsonNoStreamFilter</filter-class>
         <init-param>
             <param-name>xsltFile</param-name>
             <param-value>/etc/cloudfeeds/translation/xml2json-feeds.xsl</param-value>
@@ -52,7 +52,7 @@
     </filter>
 
     <filter-mapping>
-        <filter-name>Xml2JsonExtendedFilter</filter-name>
+        <filter-name>Xml2JsonNoStreamFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

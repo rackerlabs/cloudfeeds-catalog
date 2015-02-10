@@ -20,7 +20,7 @@ class feedscatalogResolveTest extends BaseTest {
                 "net.sf.saxon.TransformerFactoryImpl");
     }
 
-    def "Generate all feeds catalog for internal node"() {
+    def "Should change all urls to internalVip, when x-external-loc is not present"() {
         when:
         def transformer = transformerFactory.newTransformer(new StreamSource(new FileReader(xslt)))
         def output = new ByteArrayOutputStream()
@@ -43,7 +43,7 @@ class feedscatalogResolveTest extends BaseTest {
         assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://internal.atom.vip/usagesummary/files/events"
     }
 
-    def "Generate all feeds catalog for external node"() {
+    def "Should change all urls to externalVip, when x-external-loc is present"() {
         when:
         def transformer = transformerFactory.newTransformer(new StreamSource(new FileReader(xslt)))
         def output = new ByteArrayOutputStream()
@@ -67,7 +67,7 @@ class feedscatalogResolveTest extends BaseTest {
         assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://external.feeds.vip/usagesummary/files/events"
     }
 
-    def "Generate feeds catalog with tenantId for internal node"() {
+    def "Should change all urls to internalVip with tenantIds from the params, when x-external-loc is not present"() {
         when:
         def transformer = transformerFactory.newTransformer(new StreamSource(new FileReader(xslt)))
         def output = new ByteArrayOutputStream()
@@ -93,7 +93,7 @@ class feedscatalogResolveTest extends BaseTest {
         assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://internal.atom.vip/usagesummary/files/events/" + NAST_ID
     }
 
-    def "Generate feeds catalog with tenantId for external node"() {
+    def "Should change all urls to externalVip with tenantIds from the params, when x-external-loc is present"() {
         when:
         def transformer = transformerFactory.newTransformer(new StreamSource(new FileReader(xslt)))
         def output = new ByteArrayOutputStream()

@@ -1,7 +1,6 @@
 package com.rackspace.feeds.feedscatalog;
 
-import com.rackspace.feeds.filter.OutputStreamResponseWrapper;
-import com.rackspace.feeds.filter.ServletOutputStreamWrapper;
+import com.rackspace.feeds.filter.StringResponseWrapper;
 import com.rackspace.feeds.filter.TransformerUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -16,6 +15,9 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
+/**
+ * Resolve the hostname vip and tenantIds of href links in the feeds catalog response
+ */
 public class ResolveHostFilter implements Filter {
 
     static Logger LOG = LoggerFactory.getLogger(ResolveHostFilter.class);
@@ -23,9 +25,6 @@ public class ResolveHostFilter implements Filter {
 
     private TransformerUtils transformer;
 
-    /**
-     * This method is called once when the filter is first loaded.
-     */
     public void init(FilterConfig filterConfig) throws ServletException {
         LOG.debug( "initializing ResolveHostFilter" );
 
@@ -50,19 +49,16 @@ public class ResolveHostFilter implements Filter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
-        // setup wrapper response with output stream to collect transformed content
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        ServletOutputStreamWrapper outputStreamWrapper = new ServletOutputStreamWrapper(stream);
-        OutputStreamResponseWrapper wrappedResponse =
-                new OutputStreamResponseWrapper(httpServletResponse, outputStreamWrapper);
+        // setup wrapper response with output stream to collect response content
+        StringResponseWrapper wrappedResponse = new StringResponseWrapper(httpServletResponse);
 
         // apply filter further down the chain on wrapped response
         chain.doFilter(httpServletRequest, wrappedResponse);
 
         // obtain response content
-        String originalResponseContent = stream.toString();
-        LOG.debug("Original response content length = " + originalResponseContent.length());
+        String originalResponseContent = wrappedResponse.getResponseString();
 
+        // transform the response with resolve-host if not empty
         if (StringUtils.isNotEmpty(originalResponseContent)) {
 
             // create input params to xslt with headers from request
@@ -71,21 +67,22 @@ public class ResolveHostFilter implements Filter {
             putExternalLocParams(httpServletRequest, params);
 
             try {
+                // create outputStream to store result of transformation
                 OutputStream outputStream = new ByteArrayOutputStream();
 
-                // transform response content with resolve host xslt
+                // transform response content with resolve-host xslt
                 transformer.doTransform(params,
                     new StreamSource(new StringReader(originalResponseContent)),
                     new StreamResult(outputStream));
 
                 // set transformed content to response
                 String newResponseContent = outputStream.toString();
-                LOG.debug("New response content length = " + newResponseContent.length());
                 httpServletResponse.setContentLength(newResponseContent.length());
                 httpServletResponse.getWriter().write(newResponseContent);
             }
             catch (Exception e) {
-                LOG.error("Error transforming xml: " + e.getMessage());
+                LOG.error("Error transforming xml:" + e.getMessage());
+                throw new ServletException(e);
             }
             finally {
                 httpServletResponse.getWriter().close();
@@ -93,16 +90,20 @@ public class ResolveHostFilter implements Filter {
         }
     }
 
-    /**
-     * The counterpart to the init( ) method.
-     */
     public void destroy( ) {
 
     }
 
+    /**
+     * put tenantId and nastId into the HashMap params
+     *
+     * @param request
+     * @param params
+     */
     void putTenantIdParams(HttpServletRequest request, HashMap<String, Object> params) {
-        //put tenantId and nastId into the params HashMap
-        //tenantId is the shortest length value, nastId is the longest length value
+        // tenantId is the shortest length value, nastId is the longest length value
+        String tenantId = null;
+        String nastId = null;
         Enumeration headerValues = request.getHeaders("x-tenant-id");
         ArrayList<String> tenantIds = new ArrayList<String>();
         while (headerValues.hasMoreElements()) {
@@ -110,8 +111,8 @@ public class ResolveHostFilter implements Filter {
         }
 
         if (tenantIds.size() > 0) {
-            String tenantId = tenantIds.get(0);
-            String nastId = tenantIds.get(0);
+            tenantId = tenantIds.get(0);
+            nastId = tenantIds.get(0);
 
             for (String s: tenantIds) {
                 if (s.length() < tenantId.length()) {
@@ -122,17 +123,23 @@ public class ResolveHostFilter implements Filter {
                     nastId = s;
                 }
             }
-
-            params.put("tenantId", tenantId);
-            params.put("nastId", nastId);
         }
+        params.put("tenantId", tenantId);
+        params.put("nastId", nastId);
     }
 
+    /**
+     * put x-external-loc header into the HashMap params if the header exists
+     * @param request
+     * @param params
+     */
     void putExternalLocParams(HttpServletRequest request, HashMap<String, Object> params) {
-        //put x-external-loc header into the params HashMap if exists
         String externalLocs = request.getHeader("x-external-loc");
         if (externalLocs != null && !externalLocs.isEmpty()) {
             params.put("externalLoc", externalLocs);
+        }
+        else {
+            params.put("externalLoc", null);
         }
     }
 }
