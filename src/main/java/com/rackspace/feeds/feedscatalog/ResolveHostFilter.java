@@ -1,10 +1,11 @@
 package com.rackspace.feeds.feedscatalog;
 
-import com.rackspace.feeds.filter.StringResponseWrapper;
-import com.rackspace.feeds.filter.TransformerUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.rackspace.feeds.filter.StringResponseWrapper;
+import com.rackspace.feeds.filter.TransformerUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
