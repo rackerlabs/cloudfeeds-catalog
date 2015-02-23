@@ -89,7 +89,7 @@
         <dependency>
             <groupId>com.rackspace.feeds.filters</groupId>
             <artifactId>json-filter</artifactId>
-            <version>1.8.0</version>
+            <version>1.9.0</version>
             <type>jar</type>
         </dependency>
         <dependency>

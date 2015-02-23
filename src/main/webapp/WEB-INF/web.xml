@@ -44,6 +44,10 @@
             <param-name>xsltFile</param-name>
             <param-value>/etc/cloudfeeds/translation/xml2json-feeds.xsl</param-value>
         </init-param>
+        <init-param>
+            <param-name>filterOnGenericJsonMediaType</param-name>
+            <param-value>true</param-value>
+        </init-param>
     </filter>
 
     <filter>
