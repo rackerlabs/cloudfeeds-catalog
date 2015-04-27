@@ -6,7 +6,7 @@ import spock.lang.Shared
 import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
 
-class feedscatalogResolveTest extends BaseTest {
+class FeedscatalogResolveTest extends BaseTest {
 
     @Shared xslt = "./src/main/resources/feedscatalog-resolve-host.xsl"
     @Shared String allfeeds_XmlString = new File('./src/test/resources/test_allfeeds.xml').text
@@ -91,6 +91,8 @@ class feedscatalogResolveTest extends BaseTest {
 
         assert getStringValue(result, "/service/workspace[4]/title") == "files_usagesummary_events"
         assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://internal.atom.vip/usagesummary/files/events/" + NAST_ID
+
+        assert getStringValue(result, "/service/workspace[5]/link[@rel='archive-preferences']/@href") == "https://test.preferences.feeds.rackspacecloud.com/archive/" + TENANT_ID
     }
 
     def "Should change all urls to externalVip with tenantIds from the params, when x-external-loc is present"() {
@@ -118,5 +120,7 @@ class feedscatalogResolveTest extends BaseTest {
 
         assert getStringValue(result, "/service/workspace[4]/title") == "files_usagesummary_events"
         assert getStringValue(result, "/service/workspace[4]/collection/@href") == "https://external.feeds.vip/usagesummary/files/events/" + NAST_ID
+
+        assert getStringValue(result, "/service/workspace[5]/link[@rel='archive-preferences']/@href") == "https://test.preferences.feeds.rackspacecloud.com/archive/" + TENANT_ID
     }
 }

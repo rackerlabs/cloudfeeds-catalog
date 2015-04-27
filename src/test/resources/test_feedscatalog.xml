@@ -6,4 +6,5 @@
     <region>DFW</region>
     <vipURL>https://internal.atom.vip</vipURL>
     <externalVipURL>https://external.feeds.vip</externalVipURL>
+    <prefsSvcVipURL>https://test.preferences.feeds.rackspacecloud.com</prefsSvcVipURL>
 </environment>
