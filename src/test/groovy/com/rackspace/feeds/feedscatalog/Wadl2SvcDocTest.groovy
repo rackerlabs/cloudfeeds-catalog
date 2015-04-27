@@ -86,4 +86,18 @@ class Wadl2SvcDocTest extends BaseTest {
         assert getStringValue(result, "/service/workspace[4]/collection/@href") == "http://myhost/nested/service3/path"
 
     }
+
+    def "Generated Svc Doc should have Prefs Svc endpoint"() {
+        when:
+        def transformer = transformerFactory.newTransformer(new StreamSource(new FileReader(xslt)))
+        def output = new ByteArrayOutputStream()
+        transformer.setParameter("generateTenantId", "false")
+        transformer.setParameter("usageSchemaVers", "1.20")
+        transformer.transform(new StreamSource(new StringReader(wadlWithNestedResource)), new StreamResult(output))
+
+        def result = output.toString()
+
+        then:
+        assert getStringValue(result, "/service/workspace[last()]/link[@rel='archive-preferences']/@href") == "\${prefsSvcVipUrl}/archive/\${tenantId}"
+    }
 }

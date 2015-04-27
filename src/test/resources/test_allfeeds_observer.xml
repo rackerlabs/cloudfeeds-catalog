@@ -24,4 +24,8 @@
             <atom:title>files_usagesummary_events</atom:title>
         </collection>
     </workspace>
+    <workspace>
+        <atom:title>Cloud Feeds Preferences Service</atom:title>
+        <atom:link href="${prefsSvcVipUrl}/archive/${tenantId}" rel="archive-preferences"/>
+    </workspace>
 </service>

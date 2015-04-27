@@ -25,6 +25,16 @@
             <xsl:apply-templates select="wadl:resource" mode="expand">
                 <xsl:with-param name="base" select="@base"/>
             </xsl:apply-templates>
+
+            <!-- hard code Preferences Service endpoint -->
+            <workspace>
+                <atom:title>Feeds Archiving Preferences Service endpoints</atom:title>
+                <atom:link>
+                    <xsl:attribute name="href"><xsl:value-of select="'${prefsSvcVipUrl}/archive/${tenantId}'"/></xsl:attribute>
+                    <xsl:attribute name="rel"><xsl:value-of select="'archive-preferences'"/></xsl:attribute>
+                </atom:link>
+            </workspace>
+
             <xsl:comment>
                 <xsl:text> Generated from schema version </xsl:text>
                 <xsl:value-of select="$usageSchemaVers"/>
