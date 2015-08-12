@@ -44,9 +44,13 @@
         </service>
     </xsl:template>
     
-    <xsl:template match="wadl:resource[@id != 'buildinfo' and @id != 'logtest' and @id != 'evict-me'
-                         and not(contains(@id, 'feedscatalog')) and not(matches(@path,'.*test[0-9]*/events'))
-                         and not(matches(@path,'\{usagetestid\}/events')) ]" mode="expand">
+    <xsl:template match="wadl:resource[@id != 'buildinfo'
+                         and @id != 'logtest'
+                         and @id != 'evict-me'
+                         and not(contains(@id, 'feedscatalog'))
+                         and not(matches(@path,'.*test[0-9]*/events'))
+                         and not(matches(@path,'\{usagetestid\}/events'))
+                         and not(matches(@path,'\{cadftestid\}/events'))]" mode="expand">
         <xsl:param name="base"></xsl:param>
         <xsl:variable name="path" select="@path"/>
         <xsl:variable name="isTenantFeed" select="contains( @type, 'wadl/feed.wadl#TenantAtomFeed') or contains( @type, 'TenantFeedsCatalog')"/>
