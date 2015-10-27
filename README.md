@@ -1,4 +1,6 @@
 # Overview
+*This project is currently in sustaining mode as deployed within Rackspace.  For more information on how to support this in sustaining mode please see https://one.rackspace.com/display/cloudfeeds/Cloud+Feeds+Sustaining+Mode+Documentation+Start+Page.*
+
 This is a simple component that takes the WADL files for Cloud Feeds and
 generates a feeds catalog in various format.
 
