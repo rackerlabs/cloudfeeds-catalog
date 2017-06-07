@@ -48,7 +48,7 @@
         <xmlsec.version>1.4.6</xmlsec.version>
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>4.0.4.RELEASE</org.springframework.version>
-        <usage-schema.version>1.116.1</usage-schema.version>
+        <usage-schema.version>1.117.0</usage-schema.version>
         <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
         <!-- this is required by rpm-maven-plugin -->
