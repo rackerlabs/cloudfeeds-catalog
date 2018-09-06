@@ -1,5 +1,4 @@
-{
- node('java') {
+node('java') {
    def mvnHome
    stage('Preparation') { // for display purposes
       // Get some code from a GitHub repository
@@ -16,5 +15,4 @@
    stage('Results') {
       archiveArtifacts artifacts: "target/*.war"
    }
-}
 }
