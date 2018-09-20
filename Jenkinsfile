@@ -7,11 +7,12 @@ node('java') {
       // Get the Maven tool.
       // ** NOTE: This 'M3' Maven tool must be configured
       // **       in the global configuration.           
-      mvnHome = tool 'M3'
+      // mvnHome = tool 'M3'
    }
    stage('Builds') {
       // Run the maven build
-      sh "'${mvnHome}/bin/mvn' clean install" 
+     // sh "'${mvnHome}/bin/mvn' clean install" 
+      sh "mvn clean install" 
    }
    stage('Results') {
       archiveArtifacts artifacts: "target/*.war"
