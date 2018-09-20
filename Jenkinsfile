@@ -1,5 +1,6 @@
 node('java') {
    def mvnHome
+   triggers { pollSCM('H */4 * * 1-5') }
    stage('Preparation') { // for display purposes
       // Get some code from a GitHub repository
       git 'https://github.com/rackerlabs/cloudfeeds-catalog.git'
