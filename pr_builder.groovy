@@ -14,5 +14,6 @@ node('java') {
     }
     stage('Results') {
        archiveArtifacts artifacts: "target/*.war"
+       slackSend channel: "@teja.cheruku", color: "#FC05DE", message: "Deployed branch" 
     }
  }
