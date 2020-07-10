@@ -480,6 +480,8 @@
                         <configuration>
                             <copyright>Apache License, Version 2.0</copyright>
                             <group>Applications/Communications</group>
+                            <needarch>noarch</needarch>
+                            <targetOS>linux</targetOS>
                             <packager>Rackspace - Cloud Integration Team</packager>
                             <description>Feeds Catalog</description>
                         </configuration>
