@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
-    <version>1.135.1</version>
+    <version>1.135.6-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>Feeds Catalog</name>
@@ -13,28 +13,27 @@
 
     <scm>
         <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
-      <tag>feedscatalog-1.135.1</tag>
+        <tag>HEAD</tag>
   </scm>
 
     <repositories>
         <repository>
-            <id>public.maven.research.rackspace.com</id>
-            <name>Rackspace Research</name>
-            <url>https://maven.research.rackspacecloud.com/content/groups/aggregate</url>
+            <id>research</id>
+            <name>IAD Artifacts-releases</name>
+            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
-            <id>releases.maven.research.rackspace.com</id>
-            <name>Rackspace Research Releases</name>
-            <url>https://maven.research.rackspacecloud.com/content/repositories/releases</url>
+            <id>central</id>
+            <name>IAD Artifacts-releases</name>
+            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
         </repository>
-
         <snapshotRepository>
-            <id>snapshots.maven.research.rackspace.com</id>
-            <name>Rackspace Research Snapshots</name>
-            <url>https://maven.research.rackspacecloud.com/content/repositories/snapshots</url>
+            <id>snapshots</id>
+            <name>IAD Artifacts-snapshots</name>
+            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
         </snapshotRepository>
     </distributionManagement>
 
