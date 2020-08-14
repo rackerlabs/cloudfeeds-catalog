@@ -20,7 +20,7 @@
         <repository>
             <id>research</id>
             <name>IAD Artifacts-Research</name>
-            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
+            <url>https://artifacts.rackspace.net:443/artifactory/maven</url>
         </repository>
     </repositories>
 
