@@ -18,9 +18,9 @@
 
     <repositories>
         <repository>
-            <id>public.maven.research.rackspace.com</id>
-            <name>Rackspace Research</name>
-            <url>https://maven.research.rackspacecloud.com/content/groups/aggregate/</url>
+            <id>research</id>
+            <name>IAD Artifacts-Research</name>
+            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
         </repository>
     </repositories>
 
