@@ -1,4 +1,4 @@
-package com.rackspace.feeds.feedscatalog;
+package com.rackspace.feeds.feedscatalog.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;

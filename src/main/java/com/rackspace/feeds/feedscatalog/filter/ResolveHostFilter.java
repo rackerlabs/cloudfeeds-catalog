@@ -1,4 +1,4 @@
-package com.rackspace.feeds.feedscatalog;
+package com.rackspace.feeds.feedscatalog.filter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

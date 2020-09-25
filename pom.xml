@@ -1,20 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!--Spring Boot framework-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.6.RELEASE</version>
+    </parent>
+
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
     <version>1.136.2-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>Feeds Catalog</name>
-    <description>
-        A simple web application that serves up Feeds catalog from a known WADL. In this case, we
-        are using the WADLs in standard-usage-schemas
-    </description>
-
     <scm>
         <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
-      <tag>feedscatalog-1.136.0</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <repositories>
         <repository>
@@ -49,7 +51,7 @@
         <xmlsec.version>1.4.6</xmlsec.version>
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>4.0.4.RELEASE</org.springframework.version>
-        <usage-schema.version>1.136.10</usage-schema.version>
+        <usage-schema.version>1.136.1</usage-schema.version>
         <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
         <!-- this is required by rpm-maven-plugin -->
@@ -57,7 +59,39 @@
     </properties>
 
     <dependencies>
-        <dependency> 
+
+        <!--Spring Boot Dependecies-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>2.22.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-dao -->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework</groupId>-->
+        <!--            <artifactId>spring-dao</artifactId>-->
+        <!--            <version>2.0.3</version>-->
+        <!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework</groupId>-->
+        <!--            <artifactId>spring-tx</artifactId>-->
+        <!--            <version>3.1.2.RELEASE</version>-->
+        <!--        </dependency>-->
+
+        <dependency>
             <groupId>com.rackspace.usage</groupId>
             <artifactId>usage-schema</artifactId>
             <version>${usage-schema.version}</version>
@@ -95,47 +129,27 @@
             <type>jar</type>
         </dependency>
         <dependency>
-             <groupId>log4j</groupId>
-             <artifactId>log4j</artifactId>
-             <version>1.2.17</version>
-        </dependency>
-        <dependency> 
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${org.springframework.version}</version>
-        </dependency>
-        <dependency> 
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>${org.springframework.version}</version>
-        </dependency>
-        <dependency> 
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${org.springframework.version}</version>
-        </dependency>
-        <dependency> 
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${org.springframework.version}</version>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
             <version>${saxon-he.version}</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>${junit.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                    <version>${mockito.version}</version>
+                    <scope>test</scope>
+                </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
@@ -155,6 +169,8 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <!-- Build Profiles-->
     <build>
         <resources>
             <resource>
@@ -191,7 +207,7 @@
                         <id>unpack</id>
                         <phase>initialize</phase>
                         <goals>
-                          <goal>unpack</goal>
+                            <goal>unpack</goal>
                         </goals>
                         <configuration>
                             <artifactItems>
@@ -310,7 +326,7 @@
                         <version>${saxon-he.version}</version>
                     </dependency>
                 </dependencies>
-	    </plugin>
+            </plugin>
             <!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -339,7 +355,7 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <configuration>
-                    <failOnMissingWebXml>true</failOnMissingWebXml>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
                     <webResources>
                         <resource>
                             <directory>${basedir}/target/generated-resources/feedscatalog/xml</directory>
@@ -425,13 +441,13 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                          <directory>${basedir}</directory>
-                          <includes>
-                              <include>pom.xml.versionsBackup</include>
-                          </includes>
-                          <followSymlinks>false</followSymlinks>
-                      </fileset>
-                  </filesets>
+                            <directory>${basedir}</directory>
+                            <includes>
+                                <include>pom.xml.versionsBackup</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
                 </configuration>
             </plugin>
         </plugins>
@@ -454,7 +470,7 @@
                                 <configuration>
                                     <name>feedscatalog-app</name>
                                     <classifier>app</classifier>
-        		            <mappings>
+                                    <mappings>
                                         <mapping>
                                             <directory>/srv/tomcat/webapps</directory>
                                             <username>tomcat</username>
@@ -468,7 +484,7 @@
                                                 </source>
                                             </sources>
                                         </mapping>
-        		            </mappings>
+                                    </mappings>
                                     <postremoveScriplet>
                                         <script>rm -rf "/srv/tomcat7/webapps/feedscatalog.war"</script>
                                     </postremoveScriplet>
@@ -487,8 +503,14 @@
                             <description>Feeds Catalog</description>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>
     </profiles>
+
 </project>
