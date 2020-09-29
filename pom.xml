@@ -11,7 +11,7 @@
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
     <version>1.136.2-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <scm>
         <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
@@ -350,30 +350,30 @@
                 </executions>
 	    </plugin>
             -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.1.1</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <webResources>
-                        <resource>
-                            <directory>${basedir}/target/generated-resources/feedscatalog/xml</directory>
-                            <targetPath>xml/</targetPath>
-                        </resource>
-                    </webResources>
-                    <warName>feedscatalog-${project.version}</warName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-war</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>war</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-war-plugin</artifactId>-->
+<!--                <version>2.1.1</version>-->
+<!--                <configuration>-->
+<!--                    <failOnMissingWebXml>false</failOnMissingWebXml>-->
+<!--                    <webResources>-->
+<!--                        <resource>-->
+<!--                            <directory>${basedir}/target/generated-resources/feedscatalog/xml</directory>-->
+<!--                            <targetPath>xml/</targetPath>-->
+<!--                        </resource>-->
+<!--                    </webResources>-->
+<!--                    <warName>feedscatalog-${project.version}</warName>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>make-war</id>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>war</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -450,7 +450,18 @@
                     </filesets>
                 </configuration>
             </plugin>
+
+            <!-- This plugin is for jar building-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <executable>true</executable>
+                </configuration>
+            </plugin>
+
         </plugins>
+
     </build>
     <profiles>
         <profile>
@@ -479,18 +490,18 @@
                                             <directoryIncluded>false</directoryIncluded>
                                             <sources>
                                                 <source>
-                                                    <location>target/feedscatalog-${project.version}.war</location>
-                                                    <destination>feedscatalog.war</destination>
+                                                    <location>target/feedscatalog-${project.version}.jar</location>
+                                                    <destination>feedscatalog.jar</destination>
                                                 </source>
                                             </sources>
                                         </mapping>
                                     </mappings>
                                     <postremoveScriplet>
-                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog.war"</script>
+                                        <script>rm -rf "/srv/tomcat7/webapps/feedscatalog.jar"</script>
                                     </postremoveScriplet>
-                                    <requires>
-                                        <require>tomcat7</require>
-                                    </requires>
+<!--                                    <requires>-->
+<!--                                        <require>tomcat8</require>-->
+<!--                                    </requires>-->
                                 </configuration>
                             </execution>
                         </executions>
@@ -503,14 +514,12 @@
                             <description>Feeds Catalog</description>
                         </configuration>
                     </plugin>
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                    </plugin>
 
                 </plugins>
             </build>
         </profile>
     </profiles>
+
+
 
 </project>
