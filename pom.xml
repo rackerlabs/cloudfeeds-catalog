@@ -8,6 +8,12 @@
         <version>2.2.6.RELEASE</version>
     </parent>
 
+    <name>Feeds Catalog</name>
+    <description>
+        A simple web application that serves up Feeds catalog from a known WADL. In this case, we
+        are using the WADLs in standard-usage-schemas
+    </description>
+
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
     <version>1.136.2-SNAPSHOT</version>
@@ -70,6 +76,32 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- exclude logback , add log4j2 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+
+
+        <!-- asynchronous loggers -->
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -115,11 +147,6 @@
             <artifactId>json-filter</artifactId>
             <version>${cloudfeeds.atomhopper.version}</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
