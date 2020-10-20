@@ -39,7 +39,7 @@
     </distributionManagement>
 
     <properties>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.13.1</junit.version>
         <groovy.version>2.2.0</groovy.version>
         <spock.version>0.7-groovy-2.0</spock.version>
         <gmaven.version>1.5</gmaven.version>
