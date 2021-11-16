@@ -8,6 +8,7 @@ LABEL maintainer="Cloudfeeds-core@rackspace.com" \
 
 #FeedsCatalog version
 ARG version
+ARG schema_version
 
 ENV CATALINA_HOME=/opt/tomcat \
     APP_HOME=/opt/feedscatalog \
@@ -21,9 +22,9 @@ WORKDIR ${APP_HOME}
 COPY --from=tomcat /usr/local/tomcat ${CATALINA_HOME}
 
 RUN apk --no-cache add curl tar bash \
-    && curl https://maven.research.rackspacecloud.com/content/repositories/releases/com/rackspace/usage/usage-schema/${APP_VERSION}/usage-schema-${APP_VERSION}-schema.tar.gz | tar xz \
-    && mv usage-schema-${APP_VERSION}/xslt-artifacts/* /etc/cloudfeeds/translation/. \
-    && curl -o ${CATALINA_HOME}/webapps/feedscatalog.war https://maven.research.rackspacecloud.com/content/repositories/releases/com/rackspace/feeds/feedscatalog/${APP_VERSION}/feedscatalog-${APP_VERSION}.war \
+    && curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${schema_version}/usage-schema-${schema_version}-schema.tar.gz | tar xz \
+    && mv usage-schema-${schema_version}/xslt-artifacts/* /etc/cloudfeeds/translation/. \
+    && curl -o ${CATALINA_HOME}/webapps/feedscatalog.war https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/feeds/feedscatalog/${APP_VERSION}/feedscatalog-${APP_VERSION}.war \
     && rm -rf ${APP_HOME}
 
 EXPOSE 8080
