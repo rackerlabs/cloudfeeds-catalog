@@ -52,18 +52,14 @@ ENV SAXON_HOME=/etc/saxon \
 
 # add non privileged user
 RUN <<EOF
-      USER feeds:feeds
       groupadd -r feeds && useradd -r -g feeds feeds
 
       mkdir -p /etc/cloudfeeds/translation/
       chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/
 
-      VOLUME ["/usr/local/tomcat/logs/"]
       wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
       chown feeds:feeds /usr/local/bin/dumb-init
-      chown feeds:feeds /usr/local/tomcat/logs/
       chmod u+x /usr/local/bin/dumb-init
-      chmod u+x /usr/local/tomcat/logs/
 EOF
 
 WORKDIR ${CATALINA_HOME}
@@ -73,7 +69,7 @@ COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/f
 COPY --chown=feeds:feeds ./docker/${saxon_lic}                            ${SAXON_HOME}/saxon-license.lic
 
 USER feeds:feeds
-VOLUME ["/usr/local/tomcat/logs/"]
+VOLUME /usr/local/tomcat/logs/
 
 
 #  ======================= get ca cert bundle from curl.haxx.se  =======================
