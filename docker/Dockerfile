@@ -3,7 +3,7 @@
 # use below command to build image
 # docker build -t khannakavish/cloudfeeds-catalog:v4 -f Dockerfile --build-arg SCHEMA_VERSION=1.138.3-SNAPSHOT  --build-arg saxon_lic=saxon-license.lic  ../
 
-# ======================== Build cloudfeeds atomhopper using maven container image =======================
+# ======================== Build cloudfeeds catalog using maven container image =======================
 
 FROM maven:3.8.6-openjdk-8-slim AS builder
 
@@ -67,7 +67,6 @@ WORKDIR ${CATALINA_HOME}
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
 COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/feedscatalog/
 COPY --chown=feeds:feeds ./docker/server.xml                              /usr/local/tomcat/conf/
-COPY --chown=feeds:feeds ./docker/${saxon_lic}                            ${SAXON_HOME}/saxon-license.lic
 
 USER feeds:feeds
 VOLUME /usr/local/tomcat/logs/
@@ -79,7 +78,7 @@ VOLUME /usr/local/tomcat/logs/
 
 
 COPY --chown=feeds:feeds --from=package /usage-schema-${SCHEMA_VERSION}/xslt-artifacts/* /etc/cloudfeeds/translation/
-COPY --chown=feeds:feeds --from=builder /cf-catalog/target/feedscatalog-1.138.7-SNAPSHOT.war ${CATALINA_HOME}/webapps/ROOT.war
+COPY --chown=feeds:feeds --from=builder /cf-catalog/target/feedscatalog-*.war ${CATALINA_HOME}/webapps/ROOT.war
 
 EXPOSE ${SERVICE_PORT}
 

@@ -3,7 +3,6 @@
     This file needs to go to /etc/feedscatalog directory.
 -->
 <environment>
-    <region>ORD</region>
     <vipURL>http://localhost</vipURL>
     <externalVipURL>http://localhost</externalVipURL>
     <prefsSvcVipURL>http://localhost</prefsSvcVipURL>
