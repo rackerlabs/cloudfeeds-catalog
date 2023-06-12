@@ -66,6 +66,7 @@ WORKDIR ${CATALINA_HOME}
 
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
 COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/feedscatalog/
+COPY --chown=feeds:feeds ./docker/server.xml                              /usr/local/tomcat/conf/
 COPY --chown=feeds:feeds ./docker/${saxon_lic}                            ${SAXON_HOME}/saxon-license.lic
 
 USER feeds:feeds
