@@ -66,7 +66,14 @@ WORKDIR ${CATALINA_HOME}
 
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
 COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/feedscatalog/
-COPY --chown=feeds:feeds ./docker/server.xml                              /usr/local/tomcat/conf/
+COPY --chown=feeds:feeds ./docker/transform.xsl                           /usr/local/tomcat
+
+RUN <<EOF
+      apt-get update
+      yes | apt-get install xsltproc
+      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml
+EOF
+
 
 USER feeds:feeds
 VOLUME /usr/local/tomcat/logs/
