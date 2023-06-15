@@ -8,8 +8,8 @@
 FROM maven:3.8.6-openjdk-8-slim AS builder
 
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
-      description="Docker image for Cloudfeeds Atom-Hopper" \
-      NAME="cloudfeeds-atomhopper"
+      description="Docker image for Cloudfeeds Catalog" \
+      NAME="cloudfeeds-catalog"
 
 WORKDIR /cf-catalog
 COPY ./../pom.xml                              /cf-catalog/pom.xml
@@ -44,8 +44,8 @@ ARG saxon_lic
 ARG SCHEMA_VERSION
 
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
-      description="Docker image for Cloudfeeds Atom-Hopper" \
-      NAME="cloudfeeds-atomhopper"
+      description="Docker image for Cloudfeeds Catalog" \
+      NAME="cloudfeeds-catalog"
 
 ENV SAXON_HOME=/etc/saxon \
     SERVICE_PORT=${SERVICE_PORT:-$service_port}
@@ -65,13 +65,13 @@ EOF
 WORKDIR ${CATALINA_HOME}
 
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
-COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/feedscatalog/
 COPY --chown=feeds:feeds ./docker/transform.xsl                           /usr/local/tomcat
 
 RUN <<EOF
       apt-get update
       yes | apt-get install xsltproc
       xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml
+      rm -rf /var/lib/apt/lists/*
 EOF
 
 

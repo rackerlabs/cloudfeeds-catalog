@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-    This file needs to go to /etc/feedscatalog directory.
--->
-<environment>
-    <vipURL>http://localhost</vipURL>
-    <externalVipURL>http://localhost</externalVipURL>
-    <prefsSvcVipURL>http://localhost</prefsSvcVipURL>
-</environment>
