@@ -7,6 +7,9 @@
 
 FROM maven:3.8.6-openjdk-8-slim AS builder
 
+ARG username
+ARG password
+
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
       NAME="cloudfeeds-catalog"
@@ -20,6 +23,8 @@ RUN mvn dependency:go-offline
 COPY . .
 #RUN mvn clean -e -B package
 RUN mvn -B verify
+
+RUN mvn -up -Dresume=false release:prepare release:perform -Dusername=${username} -Dpassword=${password} -DdryRun=true -X
 
 
 # ======================== Download artifacts =======================
