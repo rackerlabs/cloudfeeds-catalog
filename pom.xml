@@ -12,7 +12,7 @@
     </description>
 
     <scm>
-        <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
+        <connection>scm:git:https://github.com/rackerlabs/cloudfeeds-catalog.git</connection>
       <tag>feedscatalog-1.136.0</tag>
   </scm>
 
@@ -69,6 +69,8 @@
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
         <!-- this is required by rpm-maven-plugin -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.scm.id>my-scm-server</project.scm.id>
+
     </properties>
 
     <dependencies>
