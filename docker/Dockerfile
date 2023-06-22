@@ -21,7 +21,7 @@ COPY . .
 #RUN mvn clean -e -B package
 RUN mvn -B verify -DskipTests
 
-RUN mvn -up -P build-app-rpm -Dresume=false release:prepare release:perform -DdryRun=true
+RUN mvn -up -P build-app-rpm -Dresume=false release:prepare release:perform -DdryRun=true -X
 
 
 # ======================== Download artifacts =======================
