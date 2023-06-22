@@ -37,6 +37,11 @@
             <name>Rackspace Research</name>
             <url>https://maven.research.rackspacecloud.com/content/groups/aggregate</url>
         </repository>
+        <repository>
+            <id>central4</id>
+            <name>IAD Artifacts-releases4</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
@@ -69,6 +74,7 @@
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
         <!-- this is required by rpm-maven-plugin -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.scm.id>my-scm-server</project.scm.id>
     </properties>
 
     <dependencies>
