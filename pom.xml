@@ -13,7 +13,7 @@
 
     <scm>
         <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
-      <tag>feedscatalog-1.138.7-SNAPSHOT</tag>
+      <tag>feedscatalog-1.136.0</tag>
   </scm>
 
     <repositories>
