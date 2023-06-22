@@ -12,7 +12,7 @@
     </description>
 
     <scm>
-        <connection>scm:git:https://github.com/rackerlabs/cloudfeeds-catalog.git</connection>
+        <connection>scm:git:https://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@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
       <tag>feedscatalog-1.136.0</tag>
   </scm>
 
