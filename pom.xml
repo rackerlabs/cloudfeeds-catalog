@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.rackspace.feeds</groupId>
     <artifactId>feedscatalog</artifactId>
-    <version>1.138.8-SNAPSHOT</version>
+    <version>1.138.8</version>
     <packaging>war</packaging>
 
     <name>Feeds Catalog</name>
@@ -13,7 +13,7 @@
 
     <scm>
         <connection>scm:git:https://github.com/rackerlabs/cloudfeeds-catalog.git</connection>
-      <tag>feedscatalog-1.136.0</tag>
+      <tag>feedscatalog-1.138.8</tag>
   </scm>
 
     <repositories>
