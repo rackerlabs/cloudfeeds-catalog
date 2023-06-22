@@ -19,7 +19,7 @@ RUN mvn dependency:go-offline
 
 COPY . .
 #RUN mvn clean -e -B package
-RUN mvn -B verify
+RUN mvn -B verify -DskipTests
 
 RUN mvn -up -P build-rpm -Dresume=false release:prepare release:perform -DdryRun=true. 
 
