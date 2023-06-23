@@ -16,6 +16,7 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
 
 WORKDIR /cf-catalog
 COPY ./../pom.xml                              /cf-catalog/pom.xml
+COPY ./../settings.xml                        /root/.m2/settings-security.xml
 
 # RUN mvn -e -B dependency:resolve
 RUN mvn dependency:go-offline

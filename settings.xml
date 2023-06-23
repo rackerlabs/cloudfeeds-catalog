@@ -1,0 +1,39 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <localRepository/>
+    <interactiveMode/>
+    <offline/>
+    <pluginGroups/>
+    <servers>
+      <server>
+        <id>releases.maven.research.rackspace.com</id>
+        <username>cloudfeeds-cicd</username>
+        <password>saeB5Ee9we0oawaixail</password>
+      </server>
+      <server>
+        <id>central</id>
+        <username></username>
+        <password></password>
+      </server>
+    </servers>
+    <mirrors>
+    <mirror>
+        <id>insecure-repo</id>
+        <mirrorOf>external:http:*</mirrorOf>
+        <url>http://maven.research.rackspacecloud.com/content/groups/aggregate</url>
+      </mirror>
+      <mirror>
+        <id>insecure-repo</id>
+        <mirrorOf>external:http:*</mirrorOf>
+        <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local/xml-apis/xml-apis/1.3.02/xml-apis-1.3.02.pom</url>
+      </mirror>
+      <mirror>
+        <id>insecure-repo</id>
+        <mirrorOf>external:http:*</mirrorOf>
+        <url>http://repository.sonatype.org/content/groups/public</url>
+      </mirror>
+    </mirrors>
+    <proxies/>
+    <profiles/>
+    <activeProfiles/>
+</settings>
