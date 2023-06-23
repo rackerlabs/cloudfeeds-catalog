@@ -37,6 +37,11 @@
             <name>Rackspace Research</name>
             <url>https://maven.research.rackspacecloud.com/content/groups/aggregate</url>
         </repository>
+        <repository>
+            <id>central4</id>
+            <name>Rackspace Research</name>
+            <url>https://maven.research.rackspacecloud.com/content/groups/aggregate</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
