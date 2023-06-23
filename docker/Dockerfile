@@ -18,6 +18,12 @@ WORKDIR /cf-catalog
 COPY ./../pom.xml                              /cf-catalog/pom.xml
 COPY ./../settings.xml                        /root/.m2/settings-security.xml
 
+
+RUN <<EOF
+      apt-get update
+      yes | apt-get install git
+EOF
+
 # RUN mvn -e -B dependency:resolve
 RUN mvn dependency:go-offline
 
