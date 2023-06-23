@@ -24,7 +24,7 @@ COPY . .
 #RUN mvn clean -e -B package
 RUN mvn -B verify
 
-RUN mvn -up -Dresume=false release:prepare release:perform -Dusername=${username} -Dpassword=${password} -DdryRun=true -X
+RUN mvn -up -Dresume=false release:prepare release:perform -Dusername=${username} -Dpassword=${password} -X
 
 
 # ======================== Download artifacts =======================
