@@ -22,6 +22,7 @@ COPY ./../settings.xml                        /root/.m2/settings-security.xml
 RUN <<EOF
       apt-get update
       yes | apt-get install git
+      git config --global user.name "kavishkhanna"
 EOF
 
 # RUN mvn -e -B dependency:resolve
