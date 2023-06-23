@@ -32,6 +32,7 @@ COPY . .
 #RUN mvn clean -e -B package
 RUN mvn -B verify
 
+RUN git config --global user.name "kavishkhanna"
 RUN mvn -up -Dresume=false release:prepare release:perform -Dusername=${username} -Dpassword=${password} -X
 
 
