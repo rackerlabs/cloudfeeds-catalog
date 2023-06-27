@@ -23,6 +23,7 @@ RUN <<EOF
       apt-get update
       yes | apt-get install git
       git config --global user.name "kavishkhanna"
+      git config --global user.email "kavish0910@gmail.com"
 EOF
 
 # RUN mvn -e -B dependency:resolve
