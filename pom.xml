@@ -445,7 +445,7 @@
                         <version>${saxon-he.version}</version>
                     </dependency>
                 </dependencies>
-	    </plugin>
+	        </plugin>
             <!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -467,7 +467,7 @@
                         </configuration>
                     </execution>
                 </executions>
-	    </plugin>
+	        </plugin>
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -567,6 +567,15 @@
                           <followSymlinks>false</followSymlinks>
                       </fileset>
                   </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <checkModificationExcludes>
+                        <checkModificationExclude>pom.xml</checkModificationExclude>
+                    </checkModificationExcludes>
                 </configuration>
             </plugin>
         </plugins>

@@ -34,7 +34,7 @@ COPY . .
 RUN mvn -B verify
 
 RUN git config --global user.name "kavishkhanna"
-RUN mvn -up -Dresume=false release:prepare release:perform -DcheckModificationExcludeList=pom.xml -Dusername=${username} -Dpassword=${password} -X
+RUN mvn -up -Dresume=false release:prepare release:perform -Dusername=${username} -Dpassword=${password} -X
 
 
 # ======================== Download artifacts =======================
