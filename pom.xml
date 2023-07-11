@@ -244,7 +244,7 @@
                         </exclusions>
                     </dependency>
                 </dependencies>
-                <executions>
+                <!-- <executions>
                     <execution>
                         <id>update-usage-schema</id>
                         <phase>initialize</phase>
@@ -258,7 +258,7 @@
                             </properties>
                         </configuration>
                     </execution>
-                </executions>
+                </executions> -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
