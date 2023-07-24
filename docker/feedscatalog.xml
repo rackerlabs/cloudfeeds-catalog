@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    This file needs to go to /etc/feedscatalog directory.
+-->
+<environment>
+    <vipURL>catalog.kavi3398.test.cloudfeeds.rackspace.internal:8080</vipURL>
+    <externalVipURL>catalog.kavi3398.test.cloudfeeds.rackspace.internal:8080</externalVipURL>
+    <prefsSvcVipURL>catalog.kavi3398.test.cloudfeeds.rackspace.internal:8080</prefsSvcVipURL>
+</environment>

@@ -65,6 +65,7 @@ EOF
 WORKDIR ${CATALINA_HOME}
 
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
+COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/feedscatalog/
 COPY --chown=feeds:feeds ./docker/transform.xsl                           /usr/local/tomcat
 
 RUN <<EOF
@@ -85,7 +86,7 @@ VOLUME /usr/local/tomcat/logs/
 
 
 COPY --chown=feeds:feeds --from=package /usage-schema-${SCHEMA_VERSION}/xslt-artifacts/* /etc/cloudfeeds/translation/
-COPY --chown=feeds:feeds --from=builder /cf-catalog/target/feedscatalog-*.war ${CATALINA_HOME}/webapps/ROOT.war
+COPY --chown=feeds:feeds --from=builder /cf-catalog/target/feedscatalog-*.war ${CATALINA_HOME}/webapps/feedscatalog.war
 
 EXPOSE ${SERVICE_PORT}
 
