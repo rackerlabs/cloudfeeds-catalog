@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     This file needs to go to /etc/feedscatalog directory.
+    And the parameter values will be changed according to the env. 
 -->
 <environment>
-    <vipURL>catalog.kavi3398.test.cloudfeeds.rackspace.internal:8080</vipURL>
-    <externalVipURL>catalog.kavi3398.test.cloudfeeds.rackspace.internal:8080</externalVipURL>
-    <prefsSvcVipURL>catalog.kavi3398.test.cloudfeeds.rackspace.internal:8080</prefsSvcVipURL>
+    <vipURL>https://kavi3398.internal.test.aws.cloudfeeds.rackspace.net</vipURL>
+    <externalVipURL>https://kavi3398.internal.test.aws.cloudfeeds.rackspace.net</externalVipURL>
+    <prefsSvcVipURL>https://kavi3398.internal.test.aws.cloudfeeds.rackspace.net</prefsSvcVipURL>
 </environment>
