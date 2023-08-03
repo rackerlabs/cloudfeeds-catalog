@@ -9,7 +9,7 @@ FROM bitnami/git:latest AS fetcher
 ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
 
 # ARG GIT_BRANCH="feature_containerization"
-ARG GIT_BRANCH="CF-3054-Catalog-Container"
+ARG GIT_BRANCH="CF-3592-EC2-Image-Builder"
 
 RUN mkdir -p /home/cl && \
     cd /home && \
