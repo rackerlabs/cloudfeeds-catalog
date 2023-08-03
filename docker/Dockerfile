@@ -64,16 +64,13 @@ ENV SAXON_HOME=/etc/saxon \
     SERVICE_PORT=${SERVICE_PORT:-$service_port}
 
 # add non privileged user
-RUN <<EOF
-      groupadd --gid 1000 feeds && \
+RUN groupadd --gid 1000 feeds && \
       useradd -u 1000 -g feeds feeds  && \
-
       mkdir -p /etc/cloudfeeds/translation/ && \
       chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
       wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
       chown feeds:feeds /usr/local/bin/dumb-init  && \
       chmod u+x /usr/local/bin/dumb-init
-EOF
 
 WORKDIR ${CATALINA_HOME}
 
