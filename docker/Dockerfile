@@ -3,6 +3,19 @@
 # use below command to build image
 # docker build -t khannakavish/cloudfeeds-catalog:v4 -f Dockerfile --build-arg SCHEMA_VERSION=1.138.3-SNAPSHOT  --build-arg saxon_lic=saxon-license.lic  ../
 
+# =============== Clone Cloudfeeds-atomhopper repo to build container image in AWS EC2 Image Builder ===============
+FROM bitnami/git:latest AS fetcher
+
+ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
+
+# ARG GIT_BRANCH="feature_containerization"
+ARG GIT_BRANCH="CF-3054-Catalog-Container"
+
+RUN mkdir -p /home/cl && \
+    cd /home && \
+    git clone -b ${GIT_BRANCH} ${GIT_URL} cl
+
+
 # ======================== Build cloudfeeds catalog using maven container image =======================
 
 FROM maven:3.8.6-openjdk-8-slim AS builder
@@ -12,12 +25,12 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       NAME="cloudfeeds-catalog"
 
 WORKDIR /cf-catalog
-COPY ./../pom.xml                              /cf-catalog/pom.xml
+COPY --from=fetcher /home/cl/pom.xml                              /cf-catalog/pom.xml
 
 # RUN mvn -e -B dependency:resolve
 RUN mvn dependency:go-offline
 
-COPY . .
+COPY --from=fetcher /home/cl/ /cf-catalog
 #RUN mvn clean -e -B package
 RUN mvn -B verify
 
@@ -26,9 +39,9 @@ RUN mvn -B verify
 # Multi stage build
 # Download artifacts
 
-FROM alpine:3.17.0 as package
+FROM alpine:3 as package
 
-ARG SCHEMA_VERSION
+ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
 RUN apk add --update --no-cache curl tar && \
@@ -37,44 +50,41 @@ RUN apk add --update --no-cache curl tar && \
 
 
 # ======================== Create deploy Image =======================
-FROM tomcat:9.0.73-jre8-temurin-jammy as tomcat
+FROM tomcat:9-jre8 as tomcat
 
 ARG service_port=8080
 ARG saxon_lic
-ARG SCHEMA_VERSION
+ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
 
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
-      NAME="cloudfeeds-catalog"
+      NAME="catalog"
 
 ENV SAXON_HOME=/etc/saxon \
     SERVICE_PORT=${SERVICE_PORT:-$service_port}
 
 # add non privileged user
 RUN <<EOF
-      groupadd -r feeds && useradd -r -g feeds feeds
+      groupadd --gid 1000 feeds && \
+      useradd -u 1000 -g feeds feeds  && \
 
-      mkdir -p /etc/cloudfeeds/translation/
-      chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/
-
-      wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
-      chown feeds:feeds /usr/local/bin/dumb-init
+      mkdir -p /etc/cloudfeeds/translation/ && \
+      chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
+      wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
+      chown feeds:feeds /usr/local/bin/dumb-init  && \
       chmod u+x /usr/local/bin/dumb-init
 EOF
 
 WORKDIR ${CATALINA_HOME}
 
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
-COPY --chown=feeds:feeds ./docker/feedscatalog.xml                        /etc/feedscatalog/
-COPY --chown=feeds:feeds ./docker/transform.xsl                           /usr/local/tomcat
+COPY --chown=feeds:feeds --from=fetcher /home/ah/docker/feedscatalog.xml                        /etc/feedscatalog/
+COPY --chown=feeds:feeds --from=fetcher /home/ah/docker/transform.xsl                           /usr/local/tomcat
 
-RUN <<EOF
-      apt-get update
-      yes | apt-get install xsltproc
-      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml
+RUN   apt-get update  && \
+      yes | apt-get install xsltproc  && \
+      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml  && \
       rm -rf /var/lib/apt/lists/*
-EOF
-
 
 USER feeds:feeds
 VOLUME /usr/local/tomcat/logs/
@@ -83,7 +93,8 @@ VOLUME /usr/local/tomcat/logs/
 #  ======================= get ca cert bundle from curl.haxx.se  =======================
 #RUN curl https://curl.haxx.se/ca/cacert.pem -L -o /cacert.pem
 
-
+USER feeds
+VOLUME /usr/local/tomcat/logs/ /var/log/catalog/
 
 COPY --chown=feeds:feeds --from=package /usage-schema-${SCHEMA_VERSION}/xslt-artifacts/* /etc/cloudfeeds/translation/
 COPY --chown=feeds:feeds --from=builder /cf-catalog/target/feedscatalog-*.war ${CATALINA_HOME}/webapps/feedscatalog.war
