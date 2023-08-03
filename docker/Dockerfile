@@ -78,8 +78,8 @@ EOF
 WORKDIR ${CATALINA_HOME}
 
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
-COPY --chown=feeds:feeds --from=fetcher /home/ah/docker/feedscatalog.xml                        /etc/feedscatalog/
-COPY --chown=feeds:feeds --from=fetcher /home/ah/docker/transform.xsl                           /usr/local/tomcat
+COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/feedscatalog.xml                        /etc/feedscatalog/
+COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/transform.xsl                           /usr/local/tomcat
 
 RUN   apt-get update  && \
       yes | apt-get install xsltproc  && \
