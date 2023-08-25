@@ -39,7 +39,7 @@ RUN mvn -B verify
 # Multi stage build
 # Download artifacts
 
-FROM alpine:3 as package
+FROM alpine:3.18.3 as package
 
 ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
 
