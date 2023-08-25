@@ -80,8 +80,7 @@ COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/transform.xsl           
 
 RUN   apt-get update  && \
       yes | apt-get install xsltproc  && \
-      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml  && \
-      rm -rf /var/lib/apt/lists/*
+      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml
 
 USER feeds:feeds
 VOLUME /usr/local/tomcat/logs/
