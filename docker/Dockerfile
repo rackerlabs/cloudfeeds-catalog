@@ -10,7 +10,7 @@ FROM bitnami/git:latest AS fetcher
 ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
 
 # ARG GIT_BRANCH="feature_containerization"
-ARG GIT_BRANCH="CF-3592-EC2-Image-Builder"
+ARG GIT_BRANCH="CF-3585-AWS_Xray_with_ECS"
 
 RUN mkdir -p /home/cl && \
     cd /home && \
@@ -88,6 +88,7 @@ WORKDIR ${CATALINA_HOME}
 #COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
 COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/feedscatalog.xml     /etc/feedscatalog/
 COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/transform.xsl        /usr/local/tomcat
+
 
 RUN   apt-get update  && \
       yes | apt-get install xsltproc  && \
