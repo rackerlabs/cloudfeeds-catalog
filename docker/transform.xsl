@@ -6,6 +6,12 @@
                 <xsl:apply-templates select="node()|@*"/>
             </xsl:copy>
         </xsl:template>
+
+        <xsl:template match="/Server/Service/Engine/Host/Valve/@pattern">
+	        <xsl:attribute name="pattern">
+	            <xsl:value-of select="'%h %l %u %t &quot;%r&quot; %s %b %{X-Amzn-Trace-Id}i'"/>
+	        </xsl:attribute>
+	    </xsl:template>
     
         <xsl:template match="/Server/Service/Engine/Host/Valve">
             <xsl:copy>
