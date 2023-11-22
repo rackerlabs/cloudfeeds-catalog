@@ -159,6 +159,17 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/catalog-buildinfo.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/catalog-buildinfo.xml</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -433,6 +444,30 @@
                       </fileset>
                   </filesets>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-resource-one</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/generated-resources/feedscatalog/xml</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/</directory>
+                                    <includes>
+                                        <include>catalog-buildinfo.xml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

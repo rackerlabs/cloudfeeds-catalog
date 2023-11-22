@@ -105,11 +105,21 @@ public class ResolveHostFilter implements Filter {
         // tenantId is the shortest length value, nastId is the longest length value
         String tenantId = null;
         String nastId = null;
-        Enumeration headerValues = request.getHeaders("x-tenant-id");
+        // Enumeration headerValues = request.getHeaders("x-tenant-id");
+        // String[] newHeaderValue = request.getHeader("X-Tenant-Id").split(",");
+        String[] newHeaderValue ;
         ArrayList<String> tenantIds = new ArrayList<String>();
-        while (headerValues.hasMoreElements()) {
-            tenantIds.add((String) headerValues.nextElement());
+        if(null != request.getHeader("X-Tenant-Id")){
+        newHeaderValue    = request.getHeader("X-Tenant-Id").split(",");
+         
+        // while (headerValues.hasMoreElements()) {
+        //     tenantIds.add((String) headerValues.nextElement());
+        // }
+            for(int i =0 ;i < newHeaderValue.length; i++){
+                tenantIds.add(newHeaderValue[i]);
+            }
         }
+           
 
         if (tenantIds.size() > 0) {
             tenantId = tenantIds.get(0);
