@@ -7,10 +7,13 @@
 # =============== Clone Cloudfeeds-atomhopper repo to build container image in AWS EC2 Image Builder ===============
 FROM bitnami/git:latest AS fetcher
 
-ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
+ARG git_url=https://github.com/rackerlabs/cloudfeeds-catalog.git
 
 # ARG GIT_BRANCH="feature_containerization"
-ARG GIT_BRANCH="CF-3585-AWS_Xray_with_ECS"
+ARG git_branch="AWS-Migration"
+
+ENV GIT_URL=${GIT_URL:-$git_url} \
+    GIT_BRANCH=${GIT_BRANCH:-$git_branch}
 
 RUN mkdir -p /home/cl && \
     cd /home && \
@@ -41,9 +44,11 @@ RUN mvn -B verify
 # Multi stage build
 # Download artifacts
 
-FROM alpine:3.18.3 as package
+FROM alpine:3 as package
 
-ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
+ARG schema_version="1.138.3-SNAPSHOT"
+
+ENV SCHEMA_VERSION=${SCHEMA_VERSION:-$schema_version}
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
 RUN apk add --update --no-cache curl tar && \
@@ -91,8 +96,9 @@ COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/transform.xsl        /us
 
 
 RUN   apt-get update  && \
-      yes | apt-get install xsltproc  && \
-      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml
+      yes | apt-get install xsltproc  -y && \
+      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml && \
+      rm -rf /var/lib/apt/lists/*
 
 USER feeds:feeds
 
@@ -108,7 +114,7 @@ EXPOSE ${SERVICE_PORT}
 
 # Perform health check
 HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
-      CMD curl -L --fail --silent --show-error --connect-timeout 3 --max-time 3 http://localhost:${SERVICE_PORT}/catalog || exit 1
+      CMD curl -L --fail --silent --show-error --connect-timeout 3 --max-time 3 http://localhost:${SERVICE_PORT}/feedscatalog/catalog/catalog-buildinfo || exit 1
 
 
 #Start tomcat server
