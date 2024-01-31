@@ -588,7 +588,7 @@
                             <outputDirectory>${project.build.directory}/generated-resources/feedscatalog/xml</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/</directory>
+                                    <directory>src/main/resources</directory>
                                     <includes>
                                         <include>catalog-buildinfo.xml</include>
                                     </includes>
