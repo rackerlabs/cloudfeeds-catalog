@@ -31,7 +31,7 @@ COPY --from=fetcher /home/cl/pom.xml                              /cf-catalog/po
 RUN mvn dependency:go-offline
 
 COPY --from=fetcher /home/cl/ /cf-catalog
-RUN mvn clean -e -B package
+RUN mvn clean -B package
 # RUN mvn -B verify
 
 
