@@ -9,7 +9,7 @@ FROM bitnami/git:latest AS fetcher
 ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
 
 # ARG GIT_BRANCH="feature_containerization"
-ARG GIT_BRANCH="CF-3592-EC2-Image-Builder"
+ARG GIT_BRANCH="AWS-Migration"
 
 RUN mkdir -p /home/cl && \
     cd /home && \
@@ -31,8 +31,8 @@ COPY --from=fetcher /home/cl/pom.xml                              /cf-catalog/po
 RUN mvn dependency:go-offline
 
 COPY --from=fetcher /home/cl/ /cf-catalog
-#RUN mvn clean -e -B package
-RUN mvn -B verify
+RUN mvn clean -B package
+# RUN mvn -B verify
 
 
 # ======================== Download artifacts =======================
