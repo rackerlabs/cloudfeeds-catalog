@@ -70,25 +70,25 @@ ENV SAXON_HOME=/etc/saxon \
     SERVICE_PORT=${SERVICE_PORT:-$service_port}
 
 # add non privileged user
-# RUN   GID=1000; \
-#       while getent group $GID > /dev/null; do GID=$((GID+1)); done && \
-#       groupadd --gid $GID feeds && \
-#       UID=1000; \
-#       while getent passwd $UID > /dev/null; do UID=$((UID+1)); done && \
-#       useradd -u $UID -g feeds feeds && \
-#       mkdir -p /etc/cloudfeeds/translation/ && \
-#       chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
-#       wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
-#       chown feeds:feeds /usr/local/bin/dumb-init  && \
-#       chmod u+x /usr/local/bin/dumb-init
-
-RUN   groupadd --gid 1000 feeds && \
-      useradd -u 1000 -g feeds feeds  && \
+RUN   GID=1000; \
+      while getent group $GID > /dev/null; do GID=$((GID+1)); done && \
+      groupadd --gid $GID feeds && \
+      UID=1000; \
+      while getent passwd $UID > /dev/null; do UID=$((UID+1)); done && \
+      useradd -u $UID -g feeds feeds && \
       mkdir -p /etc/cloudfeeds/translation/ && \
       chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
       wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
       chown feeds:feeds /usr/local/bin/dumb-init  && \
       chmod u+x /usr/local/bin/dumb-init
+
+# RUN   groupadd --gid 1000 feeds && \
+#       useradd -u 1000 -g feeds feeds  && \
+#       mkdir -p /etc/cloudfeeds/translation/ && \
+#       chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
+#       wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
+#       chown feeds:feeds /usr/local/bin/dumb-init  && \
+#       chmod u+x /usr/local/bin/dumb-init
 
 WORKDIR ${CATALINA_HOME}
 
