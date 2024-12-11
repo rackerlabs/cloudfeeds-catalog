@@ -12,9 +12,6 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-      # - name: Install Docker
-    #   run: |
-    #     sudo apt-get install -y docker.io
     - name: Install Docker
       run: |
         # Add Docker's official GPG key:
