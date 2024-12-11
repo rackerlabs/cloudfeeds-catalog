@@ -68,6 +68,10 @@ jobs:
         aws configure set role_arn arn:aws:iam::868719706466:role/CloudfeedsEnvTrustRole --profile feeds
         aws configure set source_profile tf_user --profile feeds
 
+    - name: Set default AWS profile to tf_user
+      run: |
+        export AWS_PROFILE=tf_user
+
     - name: Log in to Amazon ECR
       run: |
         aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
@@ -86,9 +90,9 @@ jobs:
       run: |
         docker push $NEW_IMAGE_URI
 
-    - name: Set environment variables
+    - name: Set environment variables and profile feeds
       run: |
-        echo "AWS_PROFILE=feeds" >> $GITHUB_ENV
+        export AWS_PROFILE=feeds
         echo "CLUSTER_NAME=abdu7511-test-cloudfeeds-ecs-cluster" >> $GITHUB_ENV
         echo "SERVICE_NAME=test-abdu7511-cloudfeedscatalog" >> $GITHUB_ENV
         echo "TASK_DEFINITION_NAME=test-abdu7511-cloudfeedscatalog" >> $GITHUB_ENV
