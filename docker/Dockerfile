@@ -51,8 +51,8 @@ ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
 RUN apk add --update --no-cache curl tar && \
-    #curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
-    curl https://maven.research.rackspacecloud.com/service/local/repositories/releases/content/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
+    curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
+    #curl https://maven.research.rackspacecloud.com/service/local/repositories/releases/content/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
    # TODO: verify the authenticity and integrity of above packages
 
 
