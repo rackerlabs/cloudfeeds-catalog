@@ -13,12 +13,12 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Install Docker
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker.io
-        sudo systemctl start docker
-        sudo systemctl enable docker
+    # - name: Install Docker
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y docker.io
+    #     sudo systemctl start docker
+    #     sudo systemctl enable docker
 
       # - name: Install Docker
     #   run: |
