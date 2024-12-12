@@ -43,36 +43,36 @@ jobs:
     #     sudo ./aws/install --update
     #     rm -rf awscliv2.zip aws/
 
-    - name: Set up OpenJDK 8
-      uses: actions/setup-java@v3
-      with: 
-        java-version: '8'
-        distribution: 'temurin'
-        cache: maven
+    # - name: Set up OpenJDK 8
+    #   uses: actions/setup-java@v3
+    #   with: 
+    #     java-version: '8'
+    #     distribution: 'temurin'
+    #     cache: maven
 
-    - name: Install Maven
-      run: |
-       sudo apt update  
-       sudo apt install -y maven
+    # - name: Install Maven
+    #   run: |
+    #    sudo apt update  
+    #    sudo apt install -y maven
 
-    - name: Verify Java and Maven Versions
-      run: |
-        java -version
-        mvn -version
+    # - name: Verify Java and Maven Versions
+    #   run: |
+    #     java -version
+    #     mvn -version
 
-    - name: Configure AWS CLI Profile (tf_user)
-      run: |
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCOUNT_ACCESS_KEY_ID }} --profile tf_user
-        aws configure set aws_secret_access_key ${{ secrets.AWS_ACCOUNT_SECRET_ACCESS_KEY }} --profile tf_user
-        aws configure set region us-east-2 --profile tf_user
+    # - name: Configure AWS CLI Profile (tf_user)
+    #   run: |
+    #     aws configure set aws_access_key_id ${{ secrets.AWS_ACCOUNT_ACCESS_KEY_ID }} --profile tf_user
+    #     aws configure set aws_secret_access_key ${{ secrets.AWS_ACCOUNT_SECRET_ACCESS_KEY }} --profile tf_user
+    #     aws configure set region us-east-2 --profile tf_user
 
-    - name: Configure AWS CLI Profile (feeds)
-      run: |
-        aws configure set aws_access_key_id ${{ secrets.AWS_ACCOUNT_ACCESS_KEY_ID }} --profile feeds
-        aws configure set aws_secret_access_key ${{ secrets.AWS_ACCOUNT_SECRET_ACCESS_KEY }} --profile feeds
-        aws configure set region us-east-2 --profile feeds
-        aws configure set role_arn arn:aws:iam::868719706466:role/CloudfeedsEnvTrustRole --profile feeds
-        aws configure set source_profile tf_user --profile feeds
+    # - name: Configure AWS CLI Profile (feeds)
+    #   run: |
+    #     aws configure set aws_access_key_id ${{ secrets.AWS_ACCOUNT_ACCESS_KEY_ID }} --profile feeds
+    #     aws configure set aws_secret_access_key ${{ secrets.AWS_ACCOUNT_SECRET_ACCESS_KEY }} --profile feeds
+    #     aws configure set region us-east-2 --profile feeds
+    #     aws configure set role_arn arn:aws:iam::868719706466:role/CloudfeedsEnvTrustRole --profile feeds
+    #     aws configure set source_profile tf_user --profile feeds
 
     - name: Set default AWS profile to tf_user
       run: |
