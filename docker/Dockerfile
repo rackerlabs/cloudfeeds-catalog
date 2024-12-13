@@ -55,10 +55,21 @@ ARG AWS_REGION="us-east-2"
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
 # added usage-schema to s3 bucket and from bucket the usaage schema is used in dockef build & passed arguments to aws configure 
-RUN apk add --update --no-cache curl tar python3 py3-pip && \
-    pip install awscli && \
+# Install necessary tools, glibc, and AWS CLI v2
+RUN apk add --no-cache curl tar unzip && \
+    curl -LO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-2.35-r0.apk && \
+    curl -LO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-bin-2.35-r0.apk && \
+    apk add --no-cache glibc-2.35-r0.apk glibc-bin-2.35-r0.apk && \
+    rm -f glibc-2.35-r0.apk glibc-bin-2.35-r0.apk && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf awscliv2.zip aws && \
+    aws --version && \
     aws s3 cp ${S3_PATH_PRIVATE} /tmp/usage-schema.tar.gz && \
-    tar -xzf /tmp/usage-schema.tar.gz
+    tar -xzf /tmp/usage-schema.tar.gz && \
+    rm -f /tmp/usage-schema.tar.gz
+
 
 # RUN apk add --update --no-cache curl tar unzip && \
 #     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
