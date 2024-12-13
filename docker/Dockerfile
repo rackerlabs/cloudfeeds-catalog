@@ -48,12 +48,15 @@ RUN mvn -B verify
 FROM alpine:3.18.3 as package
 
 ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
+ARG S3_PATH_PRIVATE=s3://ghactions-workflow/usage-schema-${SCHEMA_VERSION}-schema.tar.gz
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
+# added usage-schema to s3 bucket and from bucket the usaage schema is used in dockef build
 RUN apk add --update --no-cache curl tar && \
-    curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
-    #curl https://maven.research.rackspacecloud.com/service/local/repositories/releases/content/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
-   # TODO: verify the authenticity and integrity of above packages
+    aws s3 cp ${S3_PATH_PRIVATE} /tmp/usage-schema.tar.gz && \
+    tar -xzf /tmp/usage-schema.tar.gz
+    #curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
+    # TODO: verify the authenticity and integrity of above packages
 
 
 # ======================== Create deploy Image =======================
