@@ -55,13 +55,18 @@ ARG AWS_REGION="us-east-2"
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
 # added usage-schema to s3 bucket and from bucket the usaage schema is used in dockef build & passed arguments to aws configure 
-RUN apk add --update --no-cache curl tar unzip && \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \ 
-    ./aws/install && \
-    rm -rf awscliv2.zip aws && \
+RUN apk add --update --no-cache curl tar python3 py3-pip && \
+    pip install awscli && \
     aws s3 cp ${S3_PATH_PRIVATE} /tmp/usage-schema.tar.gz && \
     tar -xzf /tmp/usage-schema.tar.gz
+
+# RUN apk add --update --no-cache curl tar unzip && \
+#     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+#     unzip awscliv2.zip && \ 
+#     ./aws/install && \
+#     rm -rf awscliv2.zip aws && \
+#     aws s3 cp ${S3_PATH_PRIVATE} /tmp/usage-schema.tar.gz && \
+#     tar -xzf /tmp/usage-schema.tar.gz
     #curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
     # TODO: verify the authenticity and integrity of above packages
 
