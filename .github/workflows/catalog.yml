@@ -84,7 +84,7 @@ jobs:
         echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         export NEW_IMAGE_URI="583275065488.dkr.ecr.us-east-2.amazonaws.com/catalog:$IMAGE_TAG" 
         echo "NEW_IMAGE_URI=$NEW_IMAGE_URI" >> $GITHUB_ENV
-        aws ecr get-login-password --region us-east-2 --profile tf_user | docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
+        aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
         sudo docker build --build-arg TOKEN=${{ secrets.TOKEN }} -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
         sudo docker tag test-catalog:$IMAGE_TAG $NEW_IMAGE_URI 
         sudo docker push $NEW_IMAGE_URI
