@@ -90,7 +90,7 @@ jobs:
         export NEW_IMAGE_URI="583275065488.dkr.ecr.us-east-2.amazonaws.com/catalog:$IMAGE_TAG" 
         echo "NEW_IMAGE_URI=$NEW_IMAGE_URI" >> $GITHUB_ENV
 
-        sudo docker build --build-arg TOKEN=${{ secrets.TOKEN }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_ACCOUNT_ACCESS_KEY_ID }} --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCOUNT_SECRET_ACCESS_KEY }} -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
+        sudo docker build --build-arg TOKEN=${{ secrets.TOKEN }} -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
         sudo docker tag test-catalog:$IMAGE_TAG $NEW_IMAGE_URI 
 
     - name: Push Docker image to Amazon ECR
