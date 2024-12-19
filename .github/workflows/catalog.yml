@@ -92,10 +92,11 @@ jobs:
 
         sudo docker build --build-arg TOKEN=${{ secrets.TOKEN }} -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
         sudo docker tag test-catalog:$IMAGE_TAG $NEW_IMAGE_URI 
-
-    - name: Push Docker image to Amazon ECR
-      run: |
         sudo docker push $NEW_IMAGE_URI
+
+    # - name: Push Docker image to Amazon ECR
+    #   run: |
+    #     sudo docker push $NEW_IMAGE_URI
 
     - name: Set environment variables and profile feeds
       run: |
