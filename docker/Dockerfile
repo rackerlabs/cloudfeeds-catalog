@@ -48,39 +48,12 @@ RUN mvn -B verify
 FROM alpine:3.18.3 as package
 
 ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
-ARG S3_PATH_PRIVATE=s3://ghactions-workflow/usage-schema-${SCHEMA_VERSION}-schema.tar.gz
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
-ARG AWS_REGION="us-east-2"
+
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
-# added usage-schema to s3 bucket and from bucket the usaage schema is used in dockef build & passed arguments to aws configure 
-# Install necessary tools, glibc, and AWS CLI v2
-RUN apk add --no-cache curl tar unzip && \
-    curl -LO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-2.35-r0.apk && \
-    curl -LO https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.35-r0/glibc-bin-2.35-r0.apk && \
-    apk add --no-cache glibc-2.35-r0.apk glibc-bin-2.35-r0.apk && \
-    rm -f glibc-2.35-r0.apk glibc-bin-2.35-r0.apk && \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf awscliv2.zip aws && \
-    aws --version && \
-    aws s3 cp ${S3_PATH_PRIVATE} /tmp/usage-schema.tar.gz && \
-    tar -xzf /tmp/usage-schema.tar.gz && \
-    rm -f /tmp/usage-schema.tar.gz
-
-
-# RUN apk add --update --no-cache curl tar unzip && \
-#     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-#     unzip awscliv2.zip && \ 
-#     ./aws/install && \
-#     rm -rf awscliv2.zip aws && \
-#     aws s3 cp ${S3_PATH_PRIVATE} /tmp/usage-schema.tar.gz && \
-#     tar -xzf /tmp/usage-schema.tar.gz
-    #curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
+RUN apk add --update --no-cache curl tar unzip && \
+    curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
     # TODO: verify the authenticity and integrity of above packages
-
 
 # ======================== Create deploy Image =======================
 FROM tomcat:9-jre8 as tomcat
