@@ -42,7 +42,7 @@ jobs:
     #     unzip awscliv2.zip
     #     sudo ./aws/install --update
     #     rm -rf awscliv2.zip aws/
-
+    # added and remove sudo
     # - name: Set up OpenJDK 8
     #   uses: actions/setup-java@v3
     #   with: 
