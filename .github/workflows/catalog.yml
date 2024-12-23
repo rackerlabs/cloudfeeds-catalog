@@ -100,7 +100,7 @@ jobs:
 
     - name: Set environment variables and profile feeds
       run: |
-        export AWS_PROFILE=feeds
+        echo "AWS_PROFILE=feeds" >> $GITHUB_ENV
         echo "CLUSTER_NAME=abdu7511-test-cloudfeeds-ecs-cluster" >> $GITHUB_ENV
         echo "SERVICE_NAME=test-abdu7511-catalog" >> $GITHUB_ENV
         echo "TASK_DEFINITION_NAME=test-abdu7511-catalog" >> $GITHUB_ENV
