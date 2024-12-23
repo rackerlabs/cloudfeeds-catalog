@@ -114,6 +114,7 @@ jobs:
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://task-def-template.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "task_definition_arn=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
           rm task-def-template.json task-def-template.json.bak
+          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition "$NEW_TASK_DEF_ARN" --region us-east-2
 
         # - name: Update ECS task definition with new image
     #   run: |
@@ -124,6 +125,6 @@ jobs:
     #     echo "task_definition_arn=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
     #     rm task-def-template.json task-def-template.json.bak
 
-    - name: Deploy updated task definition to ECS
-      run: |
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition "$NEW_TASK_DEF_ARN" --region us-east-2
+    # - name: Deploy updated task definition to ECS
+    #   run: |
+    #     aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition "$NEW_TASK_DEF_ARN" --region us-east-2
