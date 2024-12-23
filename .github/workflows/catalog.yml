@@ -108,8 +108,9 @@ jobs:
 
     - name: Update ECS task definition with new image
       run: |
+          export NEW_IMAGE_URI=$NEW_IMAGE_URI
           aws ecs describe-task-definition --task-definition $TASK_DEFINITION_NAME --query 'taskDefinition | {containerDefinitions: containerDefinitions, family: family, taskRoleArn: taskRoleArn, executionRoleArn: executionRoleArn, networkMode: networkMode, volumes: volumes, placementConstraints: placementConstraints, requiresCompatibilities: requiresCompatibilities, cpu: cpu, memory: memory}' --output json > task-def-template.json
-          sed -i.bak '/"name": "abdu7511-catalog"/,/}/s|\"image\": \".*\"|\"image\": \"$NEW_IMAGE_URI\"|' task-def-template.json
+          sed -i.bak "/"name": "abdu7511-catalog"/,/}/s|\"image\": \".*\"|\"image\": \"$NEW_IMAGE_URI\"|" task-def-template.json
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://task-def-template.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "task_definition_arn=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
           rm task-def-template.json task-def-template.json.bak
