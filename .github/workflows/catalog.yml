@@ -96,6 +96,7 @@ jobs:
 
     - name: Push Docker image to Amazon ECR
       run: |
+        aws ecr get-login-password --region us-east-2 --profile tf_user | docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
         sudo docker push $NEW_IMAGE_URI
 
     - name: Set environment variables and profile feeds
@@ -114,7 +115,7 @@ jobs:
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://task-def-template.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "task_definition_arn=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
           rm task-def-template.json task-def-template.json.bak
-          
+
         # - name: Update ECS task definition with new image
     #   run: |
     #     aws ecs describe-task-definition --task-definition $TASK_DEFINITION_NAME --query 'taskDefinition' --output json > task-def-template.json
