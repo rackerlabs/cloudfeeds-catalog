@@ -11,15 +11,15 @@ ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
 # ARG GIT_BRANCH="feature_containerization"
 #ARG GIT_BRANCH="CF-3592-EC2-Image-Builder"
 ARG GIT_BRANCH="CF-test-ci/cd"
-ARG TOKEN  
-
-RUN mkdir -p /home/cl && \
-    cd /home && \
-    git clone -b ${GIT_BRANCH} https://${TOKEN}@${GIT_URL#https://} cl
+# ARG TOKEN  
 
 # RUN mkdir -p /home/cl && \
 #     cd /home && \
-#     git clone -b ${GIT_BRANCH} ${GIT_URL} cl
+#     git clone -b ${GIT_BRANCH} https://${TOKEN}@${GIT_URL#https://} cl
+
+RUN mkdir -p /home/cl && \
+    cd /home && \
+    git clone -b ${GIT_BRANCH} ${GIT_URL} cl
 
 
 # ======================== Build cloudfeeds catalog using maven container image =======================
@@ -70,25 +70,25 @@ ENV SAXON_HOME=/etc/saxon \
     SERVICE_PORT=${SERVICE_PORT:-$service_port}
 
 # add non privileged user
-RUN   GID=1000; \
-      while getent group $GID > /dev/null; do GID=$((GID+1)); done && \
-      groupadd --gid $GID feeds && \
-      UID=1000; \
-      while getent passwd $UID > /dev/null; do UID=$((UID+1)); done && \
-      useradd -u $UID -g feeds feeds && \
-      mkdir -p /etc/cloudfeeds/translation/ && \
-      chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
-      wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
-      chown feeds:feeds /usr/local/bin/dumb-init  && \
-      chmod u+x /usr/local/bin/dumb-init
-
-# RUN   groupadd --gid 1000 feeds && \
-#       useradd -u 1000 -g feeds feeds  && \
+# RUN   GID=1000; \
+#       while getent group $GID > /dev/null; do GID=$((GID+1)); done && \
+#       groupadd --gid $GID feeds && \
+#       UID=1000; \
+#       while getent passwd $UID > /dev/null; do UID=$((UID+1)); done && \
+#       useradd -u $UID -g feeds feeds && \
 #       mkdir -p /etc/cloudfeeds/translation/ && \
 #       chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
 #       wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
 #       chown feeds:feeds /usr/local/bin/dumb-init  && \
 #       chmod u+x /usr/local/bin/dumb-init
+         # added -o flag infront on --gid and -u
+RUN   groupadd -o --gid 1000 feeds && \
+      useradd -o -u 1000 -g feeds feeds  && \
+      mkdir -p /etc/cloudfeeds/translation/ && \
+      chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
+      wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
+      chown feeds:feeds /usr/local/bin/dumb-init  && \
+      chmod u+x /usr/local/bin/dumb-init
 
 WORKDIR ${CATALINA_HOME}
 

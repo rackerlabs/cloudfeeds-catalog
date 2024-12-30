@@ -90,7 +90,7 @@ jobs:
         export NEW_IMAGE_URI="583275065488.dkr.ecr.us-east-2.amazonaws.com/catalog:$IMAGE_TAG" 
         echo "NEW_IMAGE_URI=$NEW_IMAGE_URI" >> $GITHUB_ENV
 
-         docker build --build-arg TOKEN=${{ secrets.TOKEN }} -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
+         docker build -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
          docker tag test-catalog:$IMAGE_TAG $NEW_IMAGE_URI 
         
 
