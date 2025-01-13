@@ -4,7 +4,7 @@
     And the parameter values will be changed according to the env. 
 -->
 <environment>
-    <vipURL>https://staging.internal.test.aws.cloudfeeds.rackspace.net</vipURL>
-    <externalVipURL>https://staging.internal.test.aws.cloudfeeds.rackspace.net</externalVipURL>
-    <prefsSvcVipURL>https://staging.internal.test.aws.cloudfeeds.rackspace.net</prefsSvcVipURL>
+    <vipURL>https://staging.internal.staging.aws.cloudfeeds.rackspace.net</vipURL>
+    <externalVipURL>https://staging.internal.staging.aws.cloudfeeds.rackspace.net</externalVipURL>
+    <prefsSvcVipURL>https://staging.internal.staging.aws.cloudfeeds.rackspace.net</prefsSvcVipURL>
 </environment>
