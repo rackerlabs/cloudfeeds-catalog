@@ -4,7 +4,7 @@
     And the parameter values will be changed according to the env. 
 -->
 <environment>
-    <vipURL>https://abdu7511.innternal.test.aws.cloudfeeds.rackspace.net</vipURL>
-    <externalVipURL>https://abdu7511.innternal.test.aws.cloudfeeds.rackspace.net</externalVipURL>
-    <prefsSvcVipURL>https://abdu7511.innternal.test.aws.cloudfeeds.rackspace.net</prefsSvcVipURL>
+    <vipURL>https://arth3649.internal.test.aws.cloudfeeds.rackspace.net</vipURL>
+    <externalVipURL>https://arth3649.internal.test.aws.cloudfeeds.rackspace.net</externalVipURL>
+    <prefsSvcVipURL>https://arth3649.internal.test.aws.cloudfeeds.rackspace.net</prefsSvcVipURL>
 </environment>
