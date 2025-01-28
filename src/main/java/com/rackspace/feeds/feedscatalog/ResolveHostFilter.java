@@ -79,6 +79,7 @@ public class ResolveHostFilter implements Filter {
                 // set transformed content to response
                 String newResponseContent = outputStream.toString();
                 httpServletResponse.setContentLength(newResponseContent.length());
+                httpServletResponse.addHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
                 httpServletResponse.getWriter().write(newResponseContent);
             }
             catch (Exception e) {

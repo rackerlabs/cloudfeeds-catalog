@@ -63,7 +63,7 @@
         <mockito.version>1.9.5</mockito.version>
         <xmlsec.version>1.4.6</xmlsec.version>
         <surefire-plugin.version>2.17</surefire-plugin.version>
-        <org.springframework.version>4.0.4.RELEASE</org.springframework.version>
+        <org.springframework.version>5.2.23.RELEASE</org.springframework.version>
         <usage-schema.version>1.138.6</usage-schema.version>
         <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
@@ -110,9 +110,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-             <groupId>log4j</groupId>
-             <artifactId>log4j</artifactId>
-             <version>1.2.17</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.1</version>
         </dependency>
         <dependency> 
             <groupId>org.springframework</groupId>
