@@ -8,8 +8,7 @@ FROM bitnami/git:latest AS fetcher
 
 ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
 
-# ARG GIT_BRANCH="feature_containerization"
-ARG GIT_BRANCH="AWS-Migration"
+ARG GIT_BRANCH="main"
 
 RUN mkdir -p /home/cl && \
     cd /home && \
@@ -41,7 +40,7 @@ RUN mvn clean -B package
 
 FROM alpine:3.18.3 as package
 
-ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
+ARG SCHEMA_VERSION="1.138.10"
 
 #RUN apk add --update --no-cache curl tar ca-certificates && \
 RUN apk add --update --no-cache curl tar && \
@@ -54,7 +53,6 @@ FROM tomcat:9-jre8 as tomcat
 
 ARG service_port=8080
 ARG saxon_lic
-ARG SCHEMA_VERSION="1.138.3-SNAPSHOT"
 
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \

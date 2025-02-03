@@ -17,16 +17,6 @@
   </scm>
 
     <repositories>
-            <repository>
-            <id>central</id>
-            <name>IAD Artifacts-releases</name>
-            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
-        </repository>
-        <repository>
-            <id>central2</id>
-            <name>jcenter-remote-cache</name>
-            <url>https://artifacts.rackspace.net:443/artifactory/jcenter-remote-cache</url>
-        </repository>
         <repository>
             <id>central3</id>
             <name>IAD Artifacts-releases2</name>
