@@ -43,7 +43,7 @@
         <groovy.version>2.2.0</groovy.version>
         <spock.version>0.7-groovy-2.0</spock.version>
         <gmaven.version>1.5</gmaven.version>
-        <jasypt.version>1.9.0</jasypt.version>
+        <jasypt.version>1.9.2</jasypt.version>
         <saxon-he.version>9.4.0.6</saxon-he.version>
         <mockito.version>1.9.5</mockito.version>
         <xmlsec.version>1.4.6</xmlsec.version>
