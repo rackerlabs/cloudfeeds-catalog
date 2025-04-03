@@ -18,9 +18,9 @@
 
     <repositories>
         <repository>
-            <id>central3</id>
-            <name>IAD Artifacts-releases2</name>
-            <url>https://maven.research.rackspacecloud.com/content/repositories/central-proxy</url>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog.git</url>
         </repository>
         <repository>
             <id>public.maven.research.rackspace.com</id>
@@ -54,7 +54,7 @@
         <xmlsec.version>1.4.6</xmlsec.version>
         <surefire-plugin.version>2.17</surefire-plugin.version>
         <org.springframework.version>5.0.0.RELEASE</org.springframework.version>
-        <usage-schema.version>1.138.10</usage-schema.version>
+        <usage-schema.version>1.139.0</usage-schema.version>
         <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
         <!-- this is required by rpm-maven-plugin -->
