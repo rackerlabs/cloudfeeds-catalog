@@ -26,7 +26,7 @@ jobs:
 
       - name: Build docker image
         run: |
-          docker build -f docker/Dockerfile -t test-catalog:$IMAGE_TAG .
+          docker build -f docker/Dockerfile -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
 
       - name: Push docker image to registry
         run: |
