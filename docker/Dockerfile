@@ -124,3 +124,4 @@ HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
 #Start tomcat server
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
+
