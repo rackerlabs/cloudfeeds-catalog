@@ -2,7 +2,7 @@ name: Catalog Deployment
 on:
   push:
     branches:
-      - cF-test-4258
+      - CF-test-4258
 jobs:
   deploy:
     runs-on: self-hosted
