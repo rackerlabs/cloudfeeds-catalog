@@ -1,0 +1,126 @@
+name: Catalog - Release to GitHub Packages
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Catalog version to release'
+        required: true
+        type: string
+
+env:
+  MAVEN_OPTS: -Xmx1024m
+  JAVA_VERSION: '8'
+
+jobs:
+  release:
+    name: Release Catalog JAR to GitHub Packages
+    runs-on: self-hosted
+    outputs:
+      catalog_version: ${{ steps.release-version.outputs.VERSION }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+    
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    
+    - name: Configure Maven for GitHub Packages
+      run: |
+        mkdir -p ~/.m2
+        cat > ~/.m2/settings.xml << 'EOF'
+        <settings>
+          <servers>
+            <server>
+              <id>github</id>
+              <username>${env.GITHUB_ACTOR}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+    
+    - name: Determine release version
+      id: release-version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          VERSION="${{ inputs.version }}"
+          mvn versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
+        elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mvn versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
+        else
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        fi
+        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Releasing Catalog version: ${VERSION}"
+    
+    - name: Build and test
+      run: |
+        echo "Building and testing Catalog ${{ steps.release-version.outputs.VERSION }}"
+        mvn clean test -B
+    
+    - name: Deploy to GitHub Packages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Deploying Catalog JAR to GitHub Packages..."
+        mvn -up -P build-app-rpm clean deploy -DskipTests -B
+        echo "✅ Catalog JAR deployed to GitHub Packages"
+    
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Catalog v${{ steps.release-version.outputs.VERSION }}
+        body: |
+          ## 🚀 Catalog Release ${{ steps.release-version.outputs.VERSION }}
+          
+          ### 📦 JAR Published to GitHub Packages
+          - `cloudfeeds-catalog-${{ steps.release-version.outputs.VERSION }}.jar`
+          
+          ### 📥 Maven Dependency
+          ```xml
+          <dependency>
+              <groupId>com.rackspace.feeds</groupId>
+              <artifactId>cloudfeeds-catalog</artifactId>
+              <version>${{ steps.release-version.outputs.VERSION }}</version>
+          </dependency>
+          ```
+          
+          ### ⚠️ Note
+          This release only publishes the JAR to GitHub Packages.
+          To deploy to ECS, trigger the "Build and Deploy" workflow.
+        draft: false
+        prerelease: false
+    
+    - name: Summary
+      run: |
+        echo "## ✅ Catalog JAR Released" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Version**: \`${{ steps.release-version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Published to**: GitHub Packages" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 To Deploy to ECS:" >> $GITHUB_STEP_SUMMARY
+        echo "Go to Actions → Build and Deploy Catalog → Run workflow" >> $GITHUB_STEP_SUMMARY
+        echo "- Leave schema_version empty (uses latest)" >> $GITHUB_STEP_SUMMARY
+        echo "- Select target environment (test/staging/prod)" >> $GITHUB_STEP_SUMMARY
