@@ -1,6 +1,8 @@
 name: Catalog - Build and Deploy to ECS
 
 on:
+  push:
+    branches: [ 'CF-test-ci/cd' ]
   workflow_dispatch:
     inputs:
       schema_version:
@@ -24,21 +26,21 @@ on:
 env:
   ECR_REGISTRY: 583275065488.dkr.ecr.us-east-2.amazonaws.com
   ECR_REPOSITORY: catalog
-  
+
   # TEST Environment
   TEST_ECS_CLUSTER: 'abdu7511-test-cloudfeeds-ecs-cluster'
   TEST_ECS_SERVICE: 'test-abdu7511-catalog'
   TEST_TASK_DEFINITION: 'test-abdu7511-catalog'
   TEST_CONTAINER_NAME: 'abdu7511-catalog'
   TEST_AWS_PROFILE: 'test'
-  
+
   # STAGING Environment
   STAGING_ECS_CLUSTER: 'staging-staging-cloudfeeds-ecs-cluster'
   STAGING_ECS_SERVICE: 'staging-staging-catalog'
   STAGING_TASK_DEFINITION: 'staging-staging-catalog'
   STAGING_CONTAINER_NAME: 'staging-catalog'
   STAGING_AWS_PROFILE: 'staging'
-  
+
   # PROD Environment
   PROD_ECS_CLUSTER: 'prod-cloudfeeds-ecs-cluster'
   PROD_ECS_SERVICE: 'prod-prod-catalog'
@@ -50,18 +52,18 @@ jobs:
   build-and-deploy:
     name: Build Docker & Deploy to ${{ inputs.environment }}
     runs-on: self-hosted
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Get versions from GitHub Packages
       id: get-versions
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "🔍 Getting latest versions from GitHub Packages..."
-        
+        echo " Getting latest versions from GitHub Packages..."
+
         # Get Schema Version
         if [[ -n "${{ inputs.schema_version }}" ]]; then
           SCHEMA_VERSION="${{ inputs.schema_version }}"
@@ -72,7 +74,7 @@ jobs:
             jq -r '[.[] | select(.name | test("SNAPSHOT") | not)] | sort_by(.created_at) | reverse | .[0].name' 2>/dev/null || echo "1.138.6")
           echo "Using latest schema version from GitHub Packages: ${SCHEMA_VERSION}"
         fi
-        
+
         # Get Catalog Version
         if [[ -n "${{ inputs.catalog_version }}" ]]; then
           CATALOG_VERSION="${{ inputs.catalog_version }}"
@@ -83,22 +85,22 @@ jobs:
             jq -r '[.[] | select(.name | test("SNAPSHOT") | not)] | sort_by(.created_at) | reverse | .[0].name' 2>/dev/null || echo "1.138.7")
           echo "Using latest catalog version from GitHub Packages: ${CATALOG_VERSION}"
         fi
-        
+
         echo "SCHEMA_VERSION=${SCHEMA_VERSION}" >> $GITHUB_OUTPUT
         echo "CATALOG_VERSION=${CATALOG_VERSION}" >> $GITHUB_OUTPUT
-        
+
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "## 📦 Versions Selected" >> $GITHUB_STEP_SUMMARY
+        echo "##Versions Selected" >> $GITHUB_STEP_SUMMARY
         echo "- **Schema**: \`${SCHEMA_VERSION}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **Catalog**: \`${CATALOG_VERSION}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **Environment**: \`${{ inputs.environment }}\`" >> $GITHUB_STEP_SUMMARY
-    
+
     - name: Set environment-specific variables
       id: set-env-vars
       run: |
         ENV="${{ inputs.environment }}"
         echo "ENVIRONMENT=${ENV}" >> $GITHUB_ENV
-        
+
         case "${ENV}" in
           test)
             echo "AWS_PROFILE=${{ env.TEST_AWS_PROFILE }}" >> $GITHUB_ENV
@@ -122,11 +124,11 @@ jobs:
             echo "CONTAINER_NAME=${{ env.PROD_CONTAINER_NAME }}" >> $GITHUB_ENV
             ;;
         esac
-    
+
     - name: Display build parameters
       run: |
         echo "========================================="
-        echo "🚀 Catalog Build & Deploy"
+        echo "Catalog Build & Deploy"
         echo "========================================="
         echo "Environment: ${{ env.ENVIRONMENT }}"
         echo "Schema Version: ${{ steps.get-versions.outputs.SCHEMA_VERSION }}"
@@ -146,14 +148,14 @@ jobs:
         echo "  Service: ${{ env.ECS_SERVICE }}"
         echo "  Container: ${{ env.CONTAINER_NAME }}"
         echo "========================================="
-    
+
     - name: Log in to Amazon ECR
       run: |
-        echo "🔐 Logging into ECR using tf_user profile..."
+        echo " Logging into ECR using tf_user profile..."
         aws ecr get-login-password --region us-east-2 --profile tf_user | \
           docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
-        echo "✅ ECR login successful"
-    
+        echo " ECR login successful"
+
     - name: Build Docker image
       env:
         TOKEN: ${{ secrets.TOKEN }}
@@ -162,13 +164,13 @@ jobs:
         echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         export NEW_IMAGE_URI="${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
         echo "NEW_IMAGE_URI=$NEW_IMAGE_URI" >> $GITHUB_ENV
-        
-        echo "🐳 Building Docker image..."
+
+        echo " Building Docker image..."
         echo "  Tag: $IMAGE_TAG"
         echo "  Schema: ${{ steps.get-versions.outputs.SCHEMA_VERSION }}"
         echo "  Catalog: ${{ steps.get-versions.outputs.CATALOG_VERSION }}"
         echo "  Environment: ${{ env.ENVIRONMENT }}"
-        
+
         docker build \
           --build-arg SCHEMA_VERSION=${{ steps.get-versions.outputs.SCHEMA_VERSION }} \
           --build-arg catalog_version=${{ steps.get-versions.outputs.CATALOG_VERSION }} \
@@ -176,34 +178,34 @@ jobs:
           --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} \
           -f docker/Dockerfile \
           -t catalog:$IMAGE_TAG .
-        
+
         if [ $? -ne 0 ]; then
-          echo "❌ Docker build failed"
+          echo " Docker build failed"
           exit 1
         fi
-        
+
         docker tag catalog:$IMAGE_TAG $NEW_IMAGE_URI
-        echo "✅ Docker image built: $NEW_IMAGE_URI"
-    
+        echo " Docker image built: $NEW_IMAGE_URI"
+
     - name: Push Docker image to ECR
       run: |
-        echo "📤 Pushing image to ECR..."
+        echo " Pushing image to ECR..."
         docker push $NEW_IMAGE_URI
-        
+
         if [ $? -ne 0 ]; then
-          echo "❌ Docker push failed"
+          echo " Docker push failed"
           exit 1
         fi
-        
-        echo "✅ Image pushed: $NEW_IMAGE_URI"
-    
+
+        echo " Image pushed: $NEW_IMAGE_URI"
+
     - name: Update ECS task definition and deploy
       run: |
-        echo "📝 Updating ECS task definition..."
+        echo " Updating ECS task definition..."
         echo "  Using ECS profile: ${{ env.AWS_PROFILE }}"
         echo "  Task Definition: ${{ env.TASK_DEFINITION }}"
         echo "  Container: ${{ env.CONTAINER_NAME }}"
-        
+
         # Get current task definition
         aws ecs describe-task-definition \
           --task-definition ${{ env.TASK_DEFINITION }} \
@@ -211,20 +213,20 @@ jobs:
           --region us-east-2 \
           --query 'taskDefinition | {containerDefinitions: containerDefinitions, family: family, taskRoleArn: taskRoleArn, executionRoleArn: executionRoleArn, networkMode: networkMode, volumes: volumes, placementConstraints: placementConstraints, requiresCompatibilities: requiresCompatibilities, cpu: cpu, memory: memory}' \
           --output json > task-def-template.json
-        
+
         if [ $? -ne 0 ]; then
-          echo "❌ Failed to get task definition"
+          echo " Failed to get task definition"
           exit 1
         fi
-        
+
         # Update container image
         echo "  Updating image for container: ${{ env.CONTAINER_NAME }}"
         sed -i.bak "/"name": "${{ env.CONTAINER_NAME }}"/,/}/s|\"image\": \".*\"|\"image\": \"$NEW_IMAGE_URI\"|" task-def-template.json
-        
+
         # Verify the change
         echo "  Verifying update..."
         grep -A 3 "${{ env.CONTAINER_NAME }}" task-def-template.json | grep "image"
-        
+
         # Register new task definition
         echo "  Registering new task definition..."
         NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
@@ -233,39 +235,39 @@ jobs:
           --region us-east-2 \
           --query 'taskDefinition.taskDefinitionArn' \
           --output text)
-        
+
         if [ $? -ne 0 ]; then
-          echo "❌ Failed to register task definition"
+          echo " Failed to register task definition"
           rm -f task-def-template.json task-def-template.json.bak
           exit 1
         fi
-        
-        echo "✅ New task definition: $NEW_TASK_DEF_ARN"
+
+        echo " New task definition: $NEW_TASK_DEF_ARN"
         rm -f task-def-template.json task-def-template.json.bak
-        
+
         # Update ECS service
-        echo "🚀 Updating ECS service..."
+        echo " Updating ECS service..."
         echo "  Cluster: ${{ env.ECS_CLUSTER }}"
         echo "  Service: ${{ env.ECS_SERVICE }}"
-        
+
         aws ecs update-service \
           --cluster ${{ env.ECS_CLUSTER }} \
           --service ${{ env.ECS_SERVICE }} \
           --task-definition "$NEW_TASK_DEF_ARN" \
           --profile ${{ env.AWS_PROFILE }} \
           --region us-east-2
-        
+
         if [ $? -ne 0 ]; then
-          echo "❌ Failed to update ECS service"
+          echo " Failed to update ECS service"
           exit 1
         fi
-        
-        echo "✅ ECS service updated - deployment in progress"
-    
+
+        echo " ECS service updated - deployment in progress"
+
     - name: Deployment summary
       if: always()
       run: |
-        echo "## 🚀 Catalog Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "##  Catalog Deployment Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Configuration" >> $GITHUB_STEP_SUMMARY
         echo "- **Environment**: \`${{ env.ENVIRONMENT }}\`" >> $GITHUB_STEP_SUMMARY
@@ -279,9 +281,9 @@ jobs:
         echo "- **ECS Cluster**: \`${{ env.ECS_CLUSTER }}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **ECS Service**: \`${{ env.ECS_SERVICE }}\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        
+
         if [ "${{ job.status }}" == "success" ]; then
-          echo "### ✅ Status: Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "###  Status: Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "The Catalog service is being deployed to ECS." >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -294,16 +296,16 @@ jobs:
           echo "  --region us-east-2" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
         else
-          echo "### ❌ Status: Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "###  Status: Deployment Failed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Review the logs above for error details." >> $GITHUB_STEP_SUMMARY
         fi
-    
+
     - name: Deployment result
       if: success()
       run: |
         echo "========================================="
-        echo "✅ Catalog Deployment Successful"
+        echo " Catalog Deployment Successful"
         echo "========================================="
         echo "Environment: ${{ env.ENVIRONMENT }}"
         echo "Catalog Version: ${{ steps.get-versions.outputs.CATALOG_VERSION }}"
@@ -314,12 +316,12 @@ jobs:
         echo ""
         echo "Deployment is in progress. Monitor ECS console for status."
         echo "========================================="
-    
+
     - name: Deployment failed
       if: failure()
       run: |
         echo "========================================="
-        echo "❌ Catalog Deployment Failed"
+        echo " Catalog Deployment Failed"
         echo "========================================="
         echo "Environment: ${{ env.ENVIRONMENT }}"
         echo "Check the logs above for error details"
