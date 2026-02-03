@@ -2,7 +2,8 @@ name: Catalog - Release to GitHub Packages
 
 on:
   push:
-    branches: [ 'CF-test-ci/cd' ]
+    branches:
+      - CF-test-ci/cd]
     tags: [ 'v*' ]
   workflow_dispatch:
     inputs:
