@@ -10,16 +10,10 @@ on:
         required: true
         type: string
 
-env:
-  MAVEN_OPTS: -Xmx1024m
-  JAVA_VERSION: '8'
-
 jobs:
   release:
     name: Release Catalog JAR to GitHub Packages
     runs-on: self-hosted
-    outputs:
-      catalog_version: ${{ steps.release-version.outputs.VERSION }}
     
     steps:
     - name: Checkout code
@@ -27,46 +21,20 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Set up JDK ${{ env.JAVA_VERSION }}
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'temurin'
-    
-    - name: Cache Maven dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
-    
-    - name: Configure Maven for GitHub Packages
-      run: |
-        mkdir -p ~/.m2
-        cat > ~/.m2/settings.xml << 'EOF'
-        <settings>
-          <servers>
-            <server>
-              <id>github</id>
-              <username>${env.GITHUB_ACTOR}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-          </servers>
-        </settings>
-        EOF
-    
     - name: Determine release version
       id: release-version
       run: |
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
           VERSION="${{ inputs.version }}"
+          echo "Using manual version: ${VERSION}"
           mvn versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
         elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
           VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Using tag version: ${VERSION}"
           mvn versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
         else
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Using pom.xml version: ${VERSION}"
         fi
         echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
         echo "Releasing Catalog version: ${VERSION}"
@@ -79,10 +47,24 @@ jobs:
     - name: Deploy to GitHub Packages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_ACTOR: ${{ github.actor }}
       run: |
-        echo "Deploying Catalog JAR to GitHub Packages..."
-        mvn -up -P build-app-rpm clean deploy -DskipTests -B
-        echo "✅ Catalog JAR deployed to GitHub Packages"
+        echo "========================================="
+        echo "Deploying Catalog JAR to GitHub Packages"
+        echo "========================================="
+        echo "Version: ${{ steps.release-version.outputs.VERSION }}"
+        echo "Actor: ${GITHUB_ACTOR}"
+        echo ""
+        echo "Using existing Maven settings from ~/.m2/settings.xml"
+        echo "Using existing Java installation on runner"
+        echo ""
+        
+        # Deploy using exact command pattern you use today
+        mvn -up -P build-app-rpm deploy -DskipTests -B
+        
+        echo ""
+        echo "✅ Catalog WAR deployed to GitHub Packages"
+        echo "Package: com.rackspace.feeds:feedscatalog:${{ steps.release-version.outputs.VERSION }}"
     
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/v')
@@ -95,32 +77,45 @@ jobs:
         body: |
           ## 🚀 Catalog Release ${{ steps.release-version.outputs.VERSION }}
           
-          ### 📦 JAR Published to GitHub Packages
-          - `cloudfeeds-catalog-${{ steps.release-version.outputs.VERSION }}.jar`
+          ### 📦 WAR Published to GitHub Packages
+          - `feedscatalog-${{ steps.release-version.outputs.VERSION }}.war`
           
           ### 📥 Maven Dependency
           ```xml
           <dependency>
               <groupId>com.rackspace.feeds</groupId>
-              <artifactId>cloudfeeds-catalog</artifactId>
+              <artifactId>feedscatalog</artifactId>
               <version>${{ steps.release-version.outputs.VERSION }}</version>
+              <type>war</type>
           </dependency>
           ```
           
-          ### ⚠️ Note
-          This release only publishes the JAR to GitHub Packages.
-          To deploy to ECS, trigger the "Build and Deploy" workflow.
+          ### ⚠️ Next Steps
+          This release only publishes the WAR to GitHub Packages.
+          
+          **To deploy to ECS:**
+          1. Go to Actions → "Catalog - Build and Deploy to ECS"
+          2. Click "Run workflow"
+          3. Leave versions empty (uses latest)
+          4. Select environment: test/staging/prod
+          5. Click "Run workflow"
         draft: false
         prerelease: false
     
     - name: Summary
       run: |
-        echo "## ✅ Catalog JAR Released" >> $GITHUB_STEP_SUMMARY
+        echo "## ✅ Catalog WAR Released" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Version**: \`${{ steps.release-version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
         echo "**Published to**: GitHub Packages" >> $GITHUB_STEP_SUMMARY
+        echo "**Package**: \`com.rackspace.feeds:feedscatalog\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Artifacts Published:" >> $GITHUB_STEP_SUMMARY
+        echo "- feedscatalog-${{ steps.release-version.outputs.VERSION }}.war" >> $GITHUB_STEP_SUMMARY
+        echo "- feedscatalog-${{ steps.release-version.outputs.VERSION }}-app.rpm (if build-app-rpm profile used)" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🚀 To Deploy to ECS:" >> $GITHUB_STEP_SUMMARY
-        echo "Go to Actions → Build and Deploy Catalog → Run workflow" >> $GITHUB_STEP_SUMMARY
-        echo "- Leave schema_version empty (uses latest)" >> $GITHUB_STEP_SUMMARY
-        echo "- Select target environment (test/staging/prod)" >> $GITHUB_STEP_SUMMARY
+        echo "Go to Actions → **Catalog - Build and Deploy to ECS** → Run workflow" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Package URL:" >> $GITHUB_STEP_SUMMARY
+        echo "https://github.com/rackerlabs/cloudfeeds-catalog/packages" >> $GITHUB_STEP_SUMMARY
