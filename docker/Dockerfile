@@ -23,9 +23,39 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
       NAME="cloudfeeds-catalog"
 
-# Create Maven settings for GitHub Packages
+# Create complete Maven settings for GitHub Packages
 RUN mkdir -p /root/.m2 && \
-    echo '<settings><servers><server><id>github</id><username>'"${GITHUB_ACTOR}"'</username><password>'"${GITHUB_TOKEN}"'</password></server></servers></settings>' > /root/.m2/settings.xml
+    cat > /root/.m2/settings.xml << 'SETTINGS_EOF'
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+  <servers>
+    <server>
+      <id>github</id>
+      <username>GITHUB_ACTOR_PLACEHOLDER</username>
+      <password>GITHUB_TOKEN_PLACEHOLDER</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>github</id>
+      <repositories>
+        <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/rackerlabs/*</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>github</activeProfile>
+  </activeProfiles>
+</settings>
+SETTINGS_EOF
+
+# Replace placeholders with actual values
+RUN sed -i "s/GITHUB_ACTOR_PLACEHOLDER/${GITHUB_ACTOR}/g" /root/.m2/settings.xml && \
+    sed -i "s/GITHUB_TOKEN_PLACEHOLDER/${GITHUB_TOKEN}/g" /root/.m2/settings.xml
 
 WORKDIR /cf-catalog
 COPY --from=fetcher /home/cl/pom.xml /cf-catalog/pom.xml
@@ -38,13 +68,43 @@ RUN mvn -B verify
 # ======================== Download schema from GitHub Packages =======================
 FROM maven:3.8.6-openjdk-8-slim as package
 
-ARG SCHEMA_VERSION="1.138.6"
+ARG SCHEMA_VERSION="1.139.3"
 ARG GITHUB_ACTOR
 ARG GITHUB_TOKEN
 
-# Create Maven settings for GitHub Packages authentication
+# Create complete Maven settings for GitHub Packages
 RUN mkdir -p /root/.m2 && \
-    echo '<settings><servers><server><id>github</id><username>'"${GITHUB_ACTOR}"'</username><password>'"${GITHUB_TOKEN}"'</password></server></servers></settings>' > /root/.m2/settings.xml
+    cat > /root/.m2/settings.xml << 'SETTINGS_EOF'
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+  <servers>
+    <server>
+      <id>github</id>
+      <username>GITHUB_ACTOR_PLACEHOLDER</username>
+      <password>GITHUB_TOKEN_PLACEHOLDER</password>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>github</id>
+      <repositories>
+        <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/rackerlabs/*</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>github</activeProfile>
+  </activeProfiles>
+</settings>
+SETTINGS_EOF
+
+# Replace placeholders with actual values
+RUN sed -i "s/GITHUB_ACTOR_PLACEHOLDER/${GITHUB_ACTOR}/g" /root/.m2/settings.xml && \
+    sed -i "s/GITHUB_TOKEN_PLACEHOLDER/${GITHUB_TOKEN}/g" /root/.m2/settings.xml
 
 # Download schema artifact from GitHub Packages using Maven
 RUN mvn dependency:copy \
@@ -55,7 +115,7 @@ RUN mvn dependency:copy \
 # Extract schema
 RUN cd /tmp && \
     tar -xzf usage-schema-${SCHEMA_VERSION}-schema.tar.gz && \
-    ls -la
+    ls -la usage-schema-${SCHEMA_VERSION}/
 
 # ======================== Create deploy Image =======================
 FROM tomcat:9-jre8 as tomcat
