@@ -23,39 +23,33 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
       NAME="cloudfeeds-catalog"
 
-# Create complete Maven settings for GitHub Packages
+# Create Maven settings for GitHub Packages with direct substitution
 RUN mkdir -p /root/.m2 && \
-    cat > /root/.m2/settings.xml << 'SETTINGS_EOF'
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
-  <servers>
-    <server>
-      <id>github</id>
-      <username>GITHUB_ACTOR_PLACEHOLDER</username>
-      <password>GITHUB_TOKEN_PLACEHOLDER</password>
-    </server>
-  </servers>
-  <profiles>
-    <profile>
-      <id>github</id>
-      <repositories>
-        <repository>
-          <id>github</id>
-          <url>https://maven.pkg.github.com/rackerlabs/*</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-      </repositories>
-    </profile>
-  </profiles>
-  <activeProfiles>
-    <activeProfile>github</activeProfile>
-  </activeProfiles>
-</settings>
-SETTINGS_EOF
-
-# Replace placeholders with actual values
-RUN sed -i "s/GITHUB_ACTOR_PLACEHOLDER/${GITHUB_ACTOR}/g" /root/.m2/settings.xml && \
-    sed -i "s/GITHUB_TOKEN_PLACEHOLDER/${GITHUB_TOKEN}/g" /root/.m2/settings.xml
+    printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
+  <servers>\n\
+    <server>\n\
+      <id>github</id>\n\
+      <username>%s</username>\n\
+      <password>%s</password>\n\
+    </server>\n\
+  </servers>\n\
+  <profiles>\n\
+    <profile>\n\
+      <id>github</id>\n\
+      <repositories>\n\
+        <repository>\n\
+          <id>github</id>\n\
+          <url>https://maven.pkg.github.com/rackerlabs/*</url>\n\
+          <releases><enabled>true</enabled></releases>\n\
+          <snapshots><enabled>true</enabled></snapshots>\n\
+        </repository>\n\
+      </repositories>\n\
+    </profile>\n\
+  </profiles>\n\
+  <activeProfiles>\n\
+    <activeProfile>github</activeProfile>\n\
+  </activeProfiles>\n\
+</settings>' "${GITHUB_ACTOR}" "${GITHUB_TOKEN}" > /root/.m2/settings.xml
 
 WORKDIR /cf-catalog
 COPY --from=fetcher /home/cl/pom.xml /cf-catalog/pom.xml
@@ -72,39 +66,33 @@ ARG SCHEMA_VERSION="1.139.3"
 ARG GITHUB_ACTOR
 ARG GITHUB_TOKEN
 
-# Create complete Maven settings for GitHub Packages
+# Create Maven settings for GitHub Packages with direct substitution
 RUN mkdir -p /root/.m2 && \
-    cat > /root/.m2/settings.xml << 'SETTINGS_EOF'
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
-  <servers>
-    <server>
-      <id>github</id>
-      <username>GITHUB_ACTOR_PLACEHOLDER</username>
-      <password>GITHUB_TOKEN_PLACEHOLDER</password>
-    </server>
-  </servers>
-  <profiles>
-    <profile>
-      <id>github</id>
-      <repositories>
-        <repository>
-          <id>github</id>
-          <url>https://maven.pkg.github.com/rackerlabs/*</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-      </repositories>
-    </profile>
-  </profiles>
-  <activeProfiles>
-    <activeProfile>github</activeProfile>
-  </activeProfiles>
-</settings>
-SETTINGS_EOF
-
-# Replace placeholders with actual values
-RUN sed -i "s/GITHUB_ACTOR_PLACEHOLDER/${GITHUB_ACTOR}/g" /root/.m2/settings.xml && \
-    sed -i "s/GITHUB_TOKEN_PLACEHOLDER/${GITHUB_TOKEN}/g" /root/.m2/settings.xml
+    printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
+  <servers>\n\
+    <server>\n\
+      <id>github</id>\n\
+      <username>%s</username>\n\
+      <password>%s</password>\n\
+    </server>\n\
+  </servers>\n\
+  <profiles>\n\
+    <profile>\n\
+      <id>github</id>\n\
+      <repositories>\n\
+        <repository>\n\
+          <id>github</id>\n\
+          <url>https://maven.pkg.github.com/rackerlabs/*</url>\n\
+          <releases><enabled>true</enabled></releases>\n\
+          <snapshots><enabled>true</enabled></snapshots>\n\
+        </repository>\n\
+      </repositories>\n\
+    </profile>\n\
+  </profiles>\n\
+  <activeProfiles>\n\
+    <activeProfile>github</activeProfile>\n\
+  </activeProfiles>\n\
+</settings>' "${GITHUB_ACTOR}" "${GITHUB_TOKEN}" > /root/.m2/settings.xml
 
 # Download schema artifact from GitHub Packages using Maven
 RUN mvn dependency:copy \
@@ -115,7 +103,7 @@ RUN mvn dependency:copy \
 # Extract schema
 RUN cd /tmp && \
     tar -xzf usage-schema-${SCHEMA_VERSION}-schema.tar.gz && \
-    ls -la usage-schema-${SCHEMA_VERSION}/
+    ls -la usage-schema-${SCHEMA_VERSION}/ usage-schema-${SCHEMA_VERSION}/
 
 # ======================== Create deploy Image =======================
 FROM tomcat:9-jre8 as tomcat
