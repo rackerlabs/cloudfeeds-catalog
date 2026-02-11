@@ -16,9 +16,16 @@ RUN mkdir -p /home/cl && \
 # ======================== Build cloudfeeds catalog using maven =======================
 FROM maven:3.8.6-openjdk-8-slim AS builder
 
+ARG GITHUB_ACTOR
+ARG GITHUB_TOKEN
+
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
       NAME="cloudfeeds-catalog"
+
+# Create Maven settings for GitHub Packages
+RUN mkdir -p /root/.m2 && \
+    echo '<settings><servers><server><id>github</id><username>'"${GITHUB_ACTOR}"'</username><password>'"${GITHUB_TOKEN}"'</password></server></servers></settings>' > /root/.m2/settings.xml
 
 WORKDIR /cf-catalog
 COPY --from=fetcher /home/cl/pom.xml /cf-catalog/pom.xml
