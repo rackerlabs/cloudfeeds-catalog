@@ -11,3 +11,26 @@ target
 .classpath
 .settings
 *.lic
+# Maven dependencies (should be in ~/.m2/repository, not here)
+aopalliance/
+asm/
+backport-util-concurrent/
+classworlds/
+com/
+commons-*/
+io/
+javax/
+jaxen/
+jline/
+junit/
+log4j/
+net/
+org/
+oro/
+plexus/
+pom.xml.versionsBackup
+stax/
+xerces/
+xml-apis/
+xml-resolver/
+xpp3/

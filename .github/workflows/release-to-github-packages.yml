@@ -1,121 +1,155 @@
-name: Catalog - Release to GitHub Packages
+name: Catalog - Branch-Based Release and Deploy
 
 on:
   push:
-    branches:
-      - CF-test-ci/cd]
+    branches: [ 'develop', 'CF-test-ci/cd' ]
     tags: [ 'v*' ]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Catalog version to release'
-        required: true
-        type: string
 
 jobs:
-  release:
-    name: Release Catalog JAR to GitHub Packages
+  determine-config:
     runs-on: self-hosted
-
+    outputs:
+      environment: ${{ steps.config.outputs.ENVIRONMENT }}
+      should_release: ${{ steps.config.outputs.SHOULD_RELEASE }}
+      version: ${{ steps.config.outputs.VERSION }}
+      cluster: ${{ steps.config.outputs.CLUSTER }}
+      service: ${{ steps.config.outputs.SERVICE }}
+      task_def: ${{ steps.config.outputs.TASK_DEF }}
+      container: ${{ steps.config.outputs.CONTAINER }}
+      profile: ${{ steps.config.outputs.PROFILE }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Determine release version
-      id: release-version
+    - name: Determine environment and config
+      id: config
       run: |
-        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          VERSION="${{ inputs.version }}"
-          echo "Using manual version: ${VERSION}"
-          mvn versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
-        elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+        # Determine from branch/tag
+        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          ENV="prod"
+          SHOULD_RELEASE="true"
           VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Using tag version: ${VERSION}"
-          mvn versions:set -DnewVersion=${VERSION} -DgenerateBackupPoms=false
-        else
+          CLUSTER="prod-cloudfeeds-ecs-cluster"
+          SERVICE="prod-prod-catalog"
+          TASK_DEF="prod-prod-catalog"
+          CONTAINER="prod-catalog"
+          PROFILE="feeds"
+        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          ENV="prod"
+          SHOULD_RELEASE="false"
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Using pom.xml version: ${VERSION}"
+          CLUSTER="prod-cloudfeeds-ecs-cluster"
+          SERVICE="prod-prod-catalog"
+          TASK_DEF="prod-prod-catalog"
+          CONTAINER="prod-catalog"
+          PROFILE="feeds"
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          ENV="staging"
+          SHOULD_RELEASE="false"
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          CLUSTER="staging-staging-cloudfeeds-ecs-cluster"
+          SERVICE="staging-staging-catalog"
+          TASK_DEF="staging-staging-catalog"
+          CONTAINER="staging-catalog"
+          PROFILE="staging"
+        elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          ENV="test"
+          SHOULD_RELEASE="true"
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          CLUSTER="abdu7511-test-cloudfeeds-ecs-cluster"
+          SERVICE="test-abdu7511-catalog"
+          TASK_DEF="test-abdu7511-catalog"
+          CONTAINER="abdu7511-catalog"
+          PROFILE="test"
         fi
+
+        echo "ENVIRONMENT=${ENV}" >> $GITHUB_OUTPUT
+        echo "SHOULD_RELEASE=${SHOULD_RELEASE}" >> $GITHUB_OUTPUT
         echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-        echo "Releasing Catalog version: ${VERSION}"
+        echo "CLUSTER=${CLUSTER}" >> $GITHUB_OUTPUT
+        echo "SERVICE=${SERVICE}" >> $GITHUB_OUTPUT
+        echo "TASK_DEF=${TASK_DEF}" >> $GITHUB_OUTPUT
+        echo "CONTAINER=${CONTAINER}" >> $GITHUB_OUTPUT
+        echo "PROFILE=${PROFILE}" >> $GITHUB_OUTPUT
+
+        echo "Deploying to: ${ENV}"
+        echo "Should release JAR: ${SHOULD_RELEASE}"
+        echo "Version: ${VERSION}"
+
+  release-jar:
+    name: Release JAR to GitHub Packages
+    runs-on: self-hosted
+    needs: determine-config
+    if: needs.determine-config.outputs.should_release == 'true'
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set version
+      run: mvn versions:set -DnewVersion=${{ needs.determine-config.outputs.version }} -DgenerateBackupPoms=false
 
     - name: Build and test
-      run: |
-        echo "Building and testing Catalog ${{ steps.release-version.outputs.VERSION }}"
-        mvn clean test -B
+      run: mvn clean test -B
 
     - name: Deploy to GitHub Packages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_ACTOR: ${{ github.actor }}
       run: |
-        echo "Deploying Catalog JAR to GitHub Packages"
-        echo "Version: ${{ steps.release-version.outputs.VERSION }}"
-        echo "Actor: ${GITHUB_ACTOR}"
-        echo ""
-        echo "Using existing Maven settings from ~/.m2/settings.xml"
-        echo "Using existing Java installation on runner"
-        echo ""
-
-        # Deploy using exact command pattern you use today
         mvn -up -P build-app-rpm deploy -DskipTests -B
+        echo " Published Catalog ${{ needs.determine-config.outputs.version }}"
 
-        echo ""
-        echo "Catalog WAR deployed to GitHub Packages"
-        echo "Package: com.rackspace.feeds:feedscatalog:${{ steps.release-version.outputs.VERSION }}"
-
-    - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: actions/create-release@v1
+  get-schema:
+    runs-on: self-hosted
+    needs: [determine-config, release-jar]
+    if: always() && (needs.release-jar.result == 'success' || needs.release-jar.result == 'skipped')
+    outputs:
+      schema_version: ${{ steps.get.outputs.SCHEMA_VERSION }}
+    steps:
+    - name: Get latest schema
+      id: get
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Catalog v${{ steps.release-version.outputs.VERSION }}
-        body: |
-          ## Catalog Release ${{ steps.release-version.outputs.VERSION }}
-
-          ### WAR Published to GitHub Packages
-          - `feedscatalog-${{ steps.release-version.outputs.VERSION }}.war`
-
-          ### Maven Dependency
-          ```xml
-          <dependency>
-              <groupId>com.rackspace.feeds</groupId>
-              <artifactId>feedscatalog</artifactId>
-              <version>${{ steps.release-version.outputs.VERSION }}</version>
-              <type>war</type>
-          </dependency>
-          ```
-
-          ###  Next Steps
-          This release only publishes the WAR to GitHub Packages.
-
-          **To deploy to ECS:**
-          1. Go to Actions  "Catalog - Build and Deploy to ECS"
-          2. Click "Run workflow"
-          3. Leave versions empty (uses latest)
-          4. Select environment: test/staging/prod
-          5. Click "Run workflow"
-        draft: false
-        prerelease: false
-
-    - name: Summary
       run: |
-        echo "##Catalog WAR Released" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Version**: \`${{ steps.release-version.outputs.VERSION }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Published to**: GitHub Packages" >> $GITHUB_STEP_SUMMARY
-        echo "**Package**: \`com.rackspace.feeds:feedscatalog\`" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "###Artifacts Published:" >> $GITHUB_STEP_SUMMARY
-        echo "- feedscatalog-${{ steps.release-version.outputs.VERSION }}.war" >> $GITHUB_STEP_SUMMARY
-        echo "- feedscatalog-${{ steps.release-version.outputs.VERSION }}-app.rpm (if build-app-rpm profile used)" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### To Deploy to ECS:" >> $GITHUB_STEP_SUMMARY
-        echo "Go to Actions → **Catalog - Build and Deploy to ECS** → Run workflow" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Package URL:" >> $GITHUB_STEP_SUMMARY
+        SCHEMA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+          "https://api.github.com/orgs/rackerlabs/packages/maven/com.rackspace.usage.usage-schema/versions" | \
+          jq -r 'sort_by(.created_at) | reverse | .[0].name' 2>/dev/null || echo "1.138.6")
+        echo "SCHEMA_VERSION=${SCHEMA}" >> $GITHUB_OUTPUT
 
+  build-and-push:
+    runs-on: self-hosted
+    needs: [determine-config, get-schema]
+    outputs:
+      image_uri: ${{ steps.build.outputs.IMAGE_URI }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: ECR Login
+      run: aws ecr get-login-password --region us-east-2 --profile tf_user | docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
+    - name: Build
+      id: build
+      run: |
+        IMAGE_TAG=${{ needs.determine-config.outputs.environment }}-$(date +%Y%m%d%H%M%S)
+        IMAGE_URI="583275065488.dkr.ecr.us-east-2.amazonaws.com/catalog:$IMAGE_TAG"
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+        docker build -t catalog:$IMAGE_TAG -f docker/Dockerfile \
+          --build-arg SCHEMA_VERSION=${{ needs.get-schema.outputs.schema_version }} \
+          .
+        docker tag catalog:$IMAGE_TAG $IMAGE_URI
+    - name: Push
+      run: docker push ${{ steps.build.outputs.IMAGE_URI }}
+
+  deploy:
+    runs-on: self-hosted
+    needs: [determine-config, build-and-push]
+    steps:
+    - name: Deploy to ECS
+      run: |
+        aws ecs describe-task-definition --task-definition ${{ needs.determine-config.outputs.task_def }} --profile ${{ needs.determine-config.outputs.profile }} --region us-east-2 \
+          --query 'taskDefinition | {containerDefinitions: containerDefinitions, family: family, taskRoleArn: taskRoleArn, executionRoleArn: executionRoleArn, networkMode: networkMode, volumes: volumes, placementConstraints: placementConstraints, requiresCompatibilities: requiresCompatibilities, cpu: cpu, memory: memory}' \
+          --output json > task-def.json
+        sed -i "/"name": "${{ needs.determine-config.outputs.container }}"/,/}/s|\"image\": \".*\"|\"image\": \"${{ needs.build-and-push.outputs.image_uri }}\"|" task-def.json
+        TASK_ARN=$(aws ecs register-task-definition --cli-input-json file://task-def.json --profile ${{ needs.determine-config.outputs.profile }} --region us-east-2 --query 'taskDefinition.taskDefinitionArn' --output text)
+        rm task-def.json
+        aws ecs update-service --cluster ${{ needs.determine-config.outputs.cluster }} --service ${{ needs.determine-config.outputs.service }} --task-definition "$TASK_ARN" --profile ${{ needs.determine-config.outputs.profile }} --region us-east-2
+        echo " Deployed to ${{ needs.determine-config.outputs.environment }}"
