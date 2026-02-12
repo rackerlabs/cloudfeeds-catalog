@@ -1,8 +1,5 @@
 # syntax=docker/dockerfile:1
 
-# Build command:
-# docker build -t catalog:v1 -f Dockerfile --build-arg SCHEMA_VERSION=1.139.3 --build-arg GITHUB_ACTOR=username --build-arg GITHUB_TOKEN=token .
-
 # =============== Clone Cloudfeeds-catalog repo ===============
 FROM bitnami/git:latest AS fetcher
 
@@ -24,7 +21,7 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
       NAME="cloudfeeds-catalog"
 
-# Create Maven settings for GitHub Packages with direct substitution
+# Create Maven settings for GitHub Packages
 RUN mkdir -p /root/.m2 && \
     printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
   <servers>\n\
@@ -55,26 +52,29 @@ RUN mkdir -p /root/.m2 && \
 WORKDIR /cf-catalog
 COPY --from=fetcher /home/cl/pom.xml /cf-catalog/pom.xml
 
-# UPDATE SCHEMA VERSION IN POM.XML BEFORE DOWNLOADING DEPENDENCIES
-RUN echo "🔧 Updating schema version to ${SCHEMA_VERSION} in pom.xml..." && \
-    mvn versions:use-dep-version \
-    -Dincludes=com.rackspace.usage:usage-schema \
-    -DdepVersion=${SCHEMA_VERSION} \
-    -DforceVersion=true \
-    -DgenerateBackupPoms=false && \
-    echo "✅ Schema version updated"
+# Show current schema version
+RUN echo "📦 Current pom.xml schema dependency:" && \
+    grep -B 2 -A 2 "usage-schema" pom.xml || echo "usage-schema not found"
 
-# Verify the change
-RUN echo "📦 Current schema version in pom.xml:" && \
-    grep -A 2 "usage-schema" /cf-catalog/pom.xml || echo "Schema dependency not found in pom.xml"
+# Update schema version using sed (works with any pom.xml structure)
+RUN echo "🔧 Updating schema version to ${SCHEMA_VERSION}..." && \
+    sed -i "/<artifactId>usage-schema<\/artifactId>/,/<\/dependency>/ s|<version>[^<]*</version>|<version>${SCHEMA_VERSION}</version>|" pom.xml && \
+    echo "✅ Schema version updated to ${SCHEMA_VERSION}"
 
-# Download dependencies with the correct schema version
+# Verify the update
+RUN echo "📦 Updated pom.xml schema dependency:" && \
+    grep -B 2 -A 2 "usage-schema" pom.xml
+
+# Download dependencies
 RUN echo "⬇️ Downloading dependencies..." && \
     mvn dependency:go-offline && \
     echo "✅ Dependencies downloaded"
 
+# Copy full source and build
 COPY --from=fetcher /home/cl/ /cf-catalog
-RUN mvn -B verify
+RUN echo "🔨 Building catalog..." && \
+    mvn -B verify && \
+    echo "✅ Build complete"
 
 # ======================== Download schema from GitHub Packages =======================
 FROM maven:3.8.6-openjdk-8-slim as package
@@ -83,7 +83,7 @@ ARG SCHEMA_VERSION="1.139.3"
 ARG GITHUB_ACTOR
 ARG GITHUB_TOKEN
 
-# Create Maven settings for GitHub Packages with direct substitution
+# Create Maven settings
 RUN mkdir -p /root/.m2 && \
     printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
   <servers>\n\
@@ -111,8 +111,8 @@ RUN mkdir -p /root/.m2 && \
   </activeProfiles>\n\
 </settings>' "${GITHUB_ACTOR}" "${GITHUB_TOKEN}" > /root/.m2/settings.xml
 
-# Download schema artifact from GitHub Packages using Maven
-RUN echo "📦 Downloading schema ${SCHEMA_VERSION} from GitHub Packages..." && \
+# Download schema artifact
+RUN echo "📦 Downloading schema ${SCHEMA_VERSION}..." && \
     mvn dependency:copy \
     -Dartifact=com.rackspace.usage:usage-schema:${SCHEMA_VERSION}:tar.gz:schema \
     -DoutputDirectory=/tmp \
