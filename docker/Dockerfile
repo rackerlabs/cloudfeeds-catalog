@@ -21,6 +21,9 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
       NAME="cloudfeeds-catalog"
 
+# Install Python for XML editing
+RUN apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
+
 # Create Maven settings for GitHub Packages
 RUN mkdir -p /root/.m2 && \
     printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
@@ -52,18 +55,34 @@ RUN mkdir -p /root/.m2 && \
 WORKDIR /cf-catalog
 COPY --from=fetcher /home/cl/pom.xml /cf-catalog/pom.xml
 
-# Show current schema version
-RUN echo "📦 Current pom.xml schema dependency:" && \
-    grep -B 2 -A 2 "usage-schema" pom.xml || echo "usage-schema not found"
+# Show current state
+RUN echo "📦 Current usage-schema dependency:" && \
+    grep -B 1 -A 3 "usage-schema" pom.xml
 
-# Update schema version using sed (works with any pom.xml structure)
-RUN echo "🔧 Updating schema version to ${SCHEMA_VERSION}..." && \
-    sed -i "/<artifactId>usage-schema<\/artifactId>/,/<\/dependency>/ s|<version>[^<]*</version>|<version>${SCHEMA_VERSION}</version>|" pom.xml && \
-    echo "✅ Schema version updated to ${SCHEMA_VERSION}"
+# Update schema version using Python (precise and reliable)
+RUN python3 << 'PYTHON_SCRIPT'
+import re
+
+schema_version = "${SCHEMA_VERSION}"
+
+with open('pom.xml', 'r') as f:
+    content = f.read()
+
+# Pattern to match ONLY usage-schema dependency version
+pattern = r'(<artifactId>usage-schema</artifactId>\s*<version>)[^<]+(</version>)'
+replacement = r'\1' + schema_version + r'\2'
+
+new_content = re.sub(pattern, replacement, content)
+
+with open('pom.xml', 'w') as f:
+    f.write(new_content)
+
+print(f"✅ Schema version updated to {schema_version}")
+PYTHON_SCRIPT
 
 # Verify the update
-RUN echo "📦 Updated pom.xml schema dependency:" && \
-    grep -B 2 -A 2 "usage-schema" pom.xml
+RUN echo "📦 Updated usage-schema dependency:" && \
+    grep -B 1 -A 3 "usage-schema" pom.xml
 
 # Download dependencies
 RUN echo "⬇️ Downloading dependencies..." && \
