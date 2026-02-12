@@ -98,7 +98,7 @@ jobs:
         GITHUB_ACTOR: ${{ github.actor }}
       run: |
         mvn -up -P build-app-rpm deploy -DskipTests -B
-        echo " Published Catalog ${{ needs.determine-config.outputs.version }}"
+        echo "✅ Published Catalog ${{ needs.determine-config.outputs.version }}"
 
   get-schema:
     runs-on: self-hosted
@@ -112,10 +112,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        echo "🔍 Fetching latest schema version from GitHub Packages..."
         SCHEMA=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
           "https://api.github.com/orgs/rackerlabs/packages/maven/com.rackspace.usage.usage-schema/versions" | \
           jq -r 'sort_by(.created_at) | reverse | .[0].name' 2>/dev/null || echo "1.138.6")
         echo "SCHEMA_VERSION=${SCHEMA}" >> $GITHUB_OUTPUT
+        echo "📦 Using schema version: ${SCHEMA}"
 
   build-and-push:
     runs-on: self-hosted
@@ -124,32 +126,100 @@ jobs:
       image_uri: ${{ steps.build.outputs.IMAGE_URI }}
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Display build parameters
+      run: |
+        echo "🚀 Building Catalog Docker Image"
+        echo "📦 Environment: ${{ needs.determine-config.outputs.environment }}"
+        echo "📦 Schema Version: ${{ needs.get-schema.outputs.schema_version }}"
+        echo "📦 Catalog Version: ${{ needs.determine-config.outputs.version }}"
+    
     - name: ECR Login
-      run: aws ecr get-login-password --region us-east-2 --profile tf_user | docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
-    - name: Build
+      run: |
+        echo "🔐 Logging into Amazon ECR..."
+        aws ecr get-login-password --region us-east-2 --profile tf_user | \
+          docker login --username AWS --password-stdin 583275065488.dkr.ecr.us-east-2.amazonaws.com
+        echo "✅ ECR login successful"
+    
+    - name: Build Docker Image
       id: build
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_ACTOR: ${{ github.actor }}
       run: |
         IMAGE_TAG=${{ needs.determine-config.outputs.environment }}-$(date +%Y%m%d%H%M%S)
         IMAGE_URI="583275065488.dkr.ecr.us-east-2.amazonaws.com/catalog:$IMAGE_TAG"
         echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+        
+        echo "🐳 Building Docker image: $IMAGE_TAG"
+        echo "   Schema version: ${{ needs.get-schema.outputs.schema_version }}"
+        
         docker build -t catalog:$IMAGE_TAG -f docker/Dockerfile \
           --build-arg SCHEMA_VERSION=${{ needs.get-schema.outputs.schema_version }} \
+          --build-arg GITHUB_ACTOR=${GITHUB_ACTOR} \
+          --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} \
           .
+        
         docker tag catalog:$IMAGE_TAG $IMAGE_URI
-    - name: Push
-      run: docker push ${{ steps.build.outputs.IMAGE_URI }}
+        echo "✅ Docker image built successfully"
+    
+    - name: Push to ECR
+      run: |
+        echo "📤 Pushing image to ECR..."
+        docker push ${{ steps.build.outputs.IMAGE_URI }}
+        echo "✅ Image pushed: ${{ steps.build.outputs.IMAGE_URI }}"
 
   deploy:
     runs-on: self-hosted
     needs: [determine-config, build-and-push]
     steps:
+    - name: Display deployment parameters
+      run: |
+        echo "🚀 Deploying to ECS"
+        echo "🎯 Environment: ${{ needs.determine-config.outputs.environment }}"
+        echo "🎯 Cluster: ${{ needs.determine-config.outputs.cluster }}"
+        echo "🎯 Service: ${{ needs.determine-config.outputs.service }}"
+        echo "🎯 Profile: ${{ needs.determine-config.outputs.profile }}"
+        echo "🐳 Image: ${{ needs.build-and-push.outputs.image_uri }}"
+    
     - name: Deploy to ECS
       run: |
-        aws ecs describe-task-definition --task-definition ${{ needs.determine-config.outputs.task_def }} --profile ${{ needs.determine-config.outputs.profile }} --region us-east-2 \
+        echo "📥 Fetching current task definition..."
+        aws ecs describe-task-definition \
+          --task-definition ${{ needs.determine-config.outputs.task_def }} \
+          --profile ${{ needs.determine-config.outputs.profile }} \
+          --region us-east-2 \
           --query 'taskDefinition | {containerDefinitions: containerDefinitions, family: family, taskRoleArn: taskRoleArn, executionRoleArn: executionRoleArn, networkMode: networkMode, volumes: volumes, placementConstraints: placementConstraints, requiresCompatibilities: requiresCompatibilities, cpu: cpu, memory: memory}' \
           --output json > task-def.json
+        
+        echo "🔧 Updating task definition with new image..."
         sed -i "/"name": "${{ needs.determine-config.outputs.container }}"/,/}/s|\"image\": \".*\"|\"image\": \"${{ needs.build-and-push.outputs.image_uri }}\"|" task-def.json
-        TASK_ARN=$(aws ecs register-task-definition --cli-input-json file://task-def.json --profile ${{ needs.determine-config.outputs.profile }} --region us-east-2 --query 'taskDefinition.taskDefinitionArn' --output text)
+        
+        echo "📝 Registering new task definition..."
+        TASK_ARN=$(aws ecs register-task-definition \
+          --cli-input-json file://task-def.json \
+          --profile ${{ needs.determine-config.outputs.profile }} \
+          --region us-east-2 \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+        
         rm task-def.json
-        aws ecs update-service --cluster ${{ needs.determine-config.outputs.cluster }} --service ${{ needs.determine-config.outputs.service }} --task-definition "$TASK_ARN" --profile ${{ needs.determine-config.outputs.profile }} --region us-east-2
-        echo " Deployed to ${{ needs.determine-config.outputs.environment }}"
+        
+        echo "🔄 Updating ECS service..."
+        aws ecs update-service \
+          --cluster ${{ needs.determine-config.outputs.cluster }} \
+          --service ${{ needs.determine-config.outputs.service }} \
+          --task-definition "$TASK_ARN" \
+          --profile ${{ needs.determine-config.outputs.profile }} \
+          --region us-east-2
+        
+        echo "✅ Deployed successfully to ${{ needs.determine-config.outputs.environment }}"
+        echo ""
+        echo "========================================="
+        echo "   Deployment Summary"
+        echo "========================================="
+        echo "Environment: ${{ needs.determine-config.outputs.environment }}"
+        echo "Service: ${{ needs.determine-config.outputs.service }}"
+        echo "Image: ${{ needs.build-and-push.outputs.image_uri }}"
+        echo "Task Definition: $TASK_ARN"
+        echo "========================================="
