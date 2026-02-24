@@ -66,7 +66,7 @@
     <!-- ========================================== -->
     <distributionManagement>
         <!-- Publish both releases and snapshots to GitHub Packages -->
-        <repository>
+       <!-- <repository>
             <id>github</id>
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog</url>
@@ -76,7 +76,7 @@
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog</url>
         </snapshotRepository>
-                     
+          -->    
         <repository>
             <id>releases.maven.research.rackspace.com</id>
             <name>Rackspace Research Releases</name>
