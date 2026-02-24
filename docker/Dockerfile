@@ -10,7 +10,7 @@ ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
 
 # ARG GIT_BRANCH="feature_containerization"
 #ARG GIT_BRANCH="CF-3592-EC2-Image-Builder"
-ARG GIT_BRANCH="CF-test-ci/cd"
+ARG GIT_BRANCH="CF_prod-test"
 # ARG TOKEN  
 
 # RUN mkdir -p /home/cl && \
