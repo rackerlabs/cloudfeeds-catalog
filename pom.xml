@@ -52,13 +52,13 @@
         </repository>
         
         <!-- DEPRECATED: Old Artifactory - No longer used -->
-        <!-- 
+         
         <repository>
             <id>central</id>
             <name>IAD Artifacts-releases</name>
             <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
         </repository>
-        -->
+        
     </repositories>
 
     <!-- ========================================== -->
@@ -78,7 +78,7 @@
         </snapshotRepository>
         
         <!-- DEPRECATED: Old Rackspace Maven Research - No longer used -->
-        <!--
+        
         <repository>
             <id>releases.maven.research.rackspace.com</id>
             <name>Rackspace Research Releases</name>
@@ -89,7 +89,7 @@
             <name>Rackspace Research Snapshots</name>
             <url>https://maven.research.rackspacecloud.com/content/repositories/snapshots</url>
         </snapshotRepository>
-        -->
+        
     </distributionManagement>
 
     <properties>
