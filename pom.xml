@@ -76,9 +76,7 @@
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog</url>
         </snapshotRepository>
-        
-        <!-- DEPRECATED: Old Rackspace Maven Research - No longer used -->
-        
+                     
         <repository>
             <id>releases.maven.research.rackspace.com</id>
             <name>Rackspace Research Releases</name>
