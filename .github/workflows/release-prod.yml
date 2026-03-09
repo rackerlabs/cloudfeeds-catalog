@@ -1,0 +1,107 @@
+name: release-prod
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: release-prod-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: self-hosted
+    environment: prod
+    env:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      SCHEMA_VERSION: ${{ vars.SCHEMA_VERSION }}
+      IMAGE_REPOSITORY: ${{ vars.IMAGE_REPOSITORY }}
+      CATALOG_VIP_URL: ${{ vars.CATALOG_VIP_URL }}
+      CATALOG_EXTERNAL_VIP_URL: ${{ vars.CATALOG_EXTERNAL_VIP_URL }}
+      CATALOG_PREFS_SERVICE_URL: ${{ vars.CATALOG_PREFS_SERVICE_URL }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Validate required settings
+        run: |
+          test -n "${AWS_ACCOUNT_ID}" || { echo "AWS_ACCOUNT_ID environment secret is required"; exit 1; }
+          test -n "${AWS_REGION}" || { echo "AWS_REGION environment variable is required"; exit 1; }
+          test -n "${SCHEMA_VERSION}" || { echo "SCHEMA_VERSION environment variable is required"; exit 1; }
+          test -n "${CATALOG_VIP_URL}" || { echo "CATALOG_VIP_URL environment variable is required"; exit 1; }
+          test -n "${CATALOG_EXTERNAL_VIP_URL}" || { echo "CATALOG_EXTERNAL_VIP_URL environment variable is required"; exit 1; }
+          test -n "${CATALOG_PREFS_SERVICE_URL}" || { echo "CATALOG_PREFS_SERVICE_URL environment variable is required"; exit 1; }
+
+      - name: Resolve catalog version
+        run: |
+          echo "CATALOG_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "${GITHUB_ENV}"
+
+      - name: Build WAR artifact
+        run: mvn -B package
+
+      - name: Upload WAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: feedscatalog-war-prod-${{ github.sha }}
+          path: target/feedscatalog-*.war
+          if-no-files-found: error
+
+      - name: Set image metadata
+        run: |
+          echo "IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_REPOSITORY:-catalog}" >> "${GITHUB_ENV}"
+          echo "IMAGE_TAG=prod-${GITHUB_SHA::7}" >> "${GITHUB_ENV}"
+          echo "VERSION_TAG=${CATALOG_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Authenticate to ECR
+        run: |
+          aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+      - name: Build image
+        run: |
+          docker build -f docker/Dockerfile \
+            --build-arg SCHEMA_VERSION="${SCHEMA_VERSION}" \
+            --build-arg CATALOG_VERSION="${CATALOG_VERSION}" \
+            --build-arg GITHUB_ACTOR="${GITHUB_ACTOR}" \
+            --build-arg TOKEN="${GITHUB_TOKEN}" \
+            --build-arg environment=prod \
+            --build-arg CATALOG_ENVIRONMENT_NAME=prod \
+            --build-arg CATALOG_VIP_URL="${CATALOG_VIP_URL}" \
+            --build-arg CATALOG_EXTERNAL_VIP_URL="${CATALOG_EXTERNAL_VIP_URL}" \
+            --build-arg CATALOG_PREFS_SERVICE_URL="${CATALOG_PREFS_SERVICE_URL}" \
+            -t "${IMAGE_URI}:${IMAGE_TAG}" \
+            -t "${IMAGE_URI}:${VERSION_TAG}" \
+            -t "${IMAGE_URI}:prod-latest" \
+            .
+
+      - name: Push image
+        run: |
+          docker push "${IMAGE_URI}:${IMAGE_TAG}"
+          docker push "${IMAGE_URI}:${VERSION_TAG}"
+          docker push "${IMAGE_URI}:prod-latest"
+
+      - name: Clean local production images
+        if: always()
+        run: |
+          docker image rm "${IMAGE_URI}:${IMAGE_TAG}" || true
+          docker image rm "${IMAGE_URI}:${VERSION_TAG}" || true
+          docker image rm "${IMAGE_URI}:prod-latest" || true
+          docker image prune -af --filter "until=168h" || true
+          docker builder prune -af --filter "until=168h" || true

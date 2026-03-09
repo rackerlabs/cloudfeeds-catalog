@@ -1,0 +1,75 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "CF-*"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    if: github.event_name == 'push' || (startsWith(github.head_ref, 'CF-') && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: self-hosted
+    env:
+      SCHEMA_VERSION: ${{ vars.SCHEMA_VERSION }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Validate required settings
+        run: |
+          test -n "${SCHEMA_VERSION}" || { echo "SCHEMA_VERSION repository variable is required"; exit 1; }
+
+      - name: Resolve catalog version
+        run: |
+          echo "CATALOG_VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "${GITHUB_ENV}"
+
+      - name: Run Maven tests
+        run: mvn -B test
+
+      - name: Build smoke image
+        run: |
+          docker build -f docker/Dockerfile \
+            --build-arg SCHEMA_VERSION="${SCHEMA_VERSION}" \
+            --build-arg CATALOG_VERSION="${CATALOG_VERSION}" \
+            --build-arg GITHUB_ACTOR="${GITHUB_ACTOR}" \
+            --build-arg TOKEN="${GITHUB_TOKEN}" \
+            --build-arg environment=test \
+            --build-arg CATALOG_ENVIRONMENT_NAME=test \
+            --build-arg CATALOG_VIP_URL="https://catalog.test.invalid" \
+            --build-arg CATALOG_EXTERNAL_VIP_URL="https://catalog-external.test.invalid" \
+            --build-arg CATALOG_PREFS_SERVICE_URL="https://catalog-prefs.test.invalid" \
+            -t "catalog:ci-${GITHUB_SHA::7}" \
+            .
+
+      - name: Clean local smoke image
+        if: always()
+        run: |
+          docker image rm "catalog:ci-${GITHUB_SHA::7}" || true
+          docker image prune -af --filter "until=168h" || true
+          docker builder prune -af --filter "until=168h" || true

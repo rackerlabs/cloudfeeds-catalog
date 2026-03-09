@@ -1,0 +1,55 @@
+name: pr-policy
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate promotion path
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const head = context.payload.pull_request.head.ref;
+            const base = context.payload.pull_request.base.ref;
+
+            const isWork = /^CF-[^-\/]+-.+/.test(head);
+            const isTest = /^test\/.+/.test(head);
+            const isStaging = /^stg\/.+/.test(head);
+            const isMain = base === "main";
+            const baseIsTest = /^test\/.+/.test(base);
+            const baseIsStaging = /^stg\/.+/.test(base);
+
+            let allowed = false;
+            let message = "";
+
+            if (isWork) {
+              allowed = baseIsTest;
+              message = "Work branches must target test/* branches.";
+            } else if (isTest) {
+              allowed = baseIsStaging;
+              message = "test/* branches must target stg/* branches.";
+            } else if (isStaging) {
+              allowed = isMain;
+              message = "stg/* branches must target main.";
+            } else {
+              allowed = false;
+              message = "Head branch must follow CF-<ticket>-<slug>, test/*, or stg/* conventions.";
+            }
+
+            if (!allowed) {
+              core.setFailed(`${message} Received ${head} -> ${base}.`);
+            } else {
+              core.info(`Validated ${head} -> ${base}.`);
+            }
