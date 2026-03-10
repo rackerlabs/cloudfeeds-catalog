@@ -7,25 +7,6 @@ on:
       - staging
       - 'feature/**'
       - main
-
-# Skip entire workflow for Maven release plugin commits
-jobs:
-  check-commit:
-    name: Check Commit Message
-    runs-on: self-hosted
-    outputs:
-      skip: ${{ steps.check.outputs.SKIP }}
-    steps:
-    - name: Check if Maven release commit
-      id: check
-      run: |
-        MSG="${{ github.event.head_commit.message }}"
-        if [[ "${MSG}" == *"[maven-release-plugin]"* ]]; then
-          echo "SKIP=true" >> $GITHUB_OUTPUT
-          echo "Skipping — Maven release plugin commit"
-        else
-          echo "SKIP=false" >> $GITHUB_OUTPUT
-        fi
   workflow_dispatch:
     inputs:
       schema_version:
@@ -47,9 +28,30 @@ env:
 
 jobs:
   # ============================================================
-  # JOB 1: Release JAR
-  # Runs ONLY on push to test-release branch
-  # Skipped on workflow_dispatch (schema trigger) and other branches
+  # JOB 1: Check if this is a Maven release plugin commit
+  # If yes — skip everything
+  # ============================================================
+  check-commit:
+    name: Check Commit Message
+    runs-on: self-hosted
+    outputs:
+      skip: ${{ steps.check.outputs.SKIP }}
+    steps:
+    - name: Check if Maven release commit
+      id: check
+      run: |
+        MSG="${{ github.event.head_commit.message }}"
+        if [[ "${MSG}" == *"[maven-release-plugin]"* ]]; then
+          echo "SKIP=true" >> $GITHUB_OUTPUT
+          echo "Skipping — Maven release plugin commit"
+        else
+          echo "SKIP=false" >> $GITHUB_OUTPUT
+          echo "Proceeding — normal commit"
+        fi
+
+  # ============================================================
+  # JOB 2: Release JAR
+  # Runs ONLY on push to test-release, skips Maven commits
   # ============================================================
   release:
     name: Release Catalog JAR to GitHub Packages
@@ -109,15 +111,10 @@ jobs:
 
     - name: Clean up any previous failed release
       run: |
-        # Remove leftover release files
         rm -f release.properties pom.xml.releaseBackup
-
-        # Get release version
         CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         RELEASE=$(echo $CURRENT | sed 's/-SNAPSHOT//')
         TAG="feedscatalog-${RELEASE}"
-
-        # Delete tag locally and remotely if it exists
         if git tag | grep -q "^${TAG}$"; then
           echo "Deleting existing tag: ${TAG}"
           git tag -d ${TAG}
@@ -145,8 +142,7 @@ jobs:
         echo "Released catalog version: ${VERSION}"
 
   # ============================================================
-  # JOB 2: Set environment
-  # Works for BOTH push and workflow_dispatch triggers
+  # JOB 3: Set environment based on branch or workflow_dispatch
   # ============================================================
   set-env:
     name: Set Deployment Environment
@@ -155,7 +151,7 @@ jobs:
     if: |
       always() && !cancelled() &&
       needs.check-commit.outputs.skip == 'false' &&
-      !(needs.release.result == 'failure')
+      needs.release.result != 'failure'
     outputs:
       environment:     ${{ steps.detect.outputs.ENV }}
       ecs_cluster:     ${{ steps.detect.outputs.ECS_CLUSTER }}
@@ -174,8 +170,6 @@ jobs:
     - name: Detect environment
       id: detect
       run: |
-        # workflow_dispatch: use inputs from schema pipeline
-        # push: detect from branch name
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
           ENV="${{ github.event.inputs.environment }}"
         elif [[ "${{ github.ref_name }}" == "main" ]]; then
@@ -212,10 +206,9 @@ jobs:
           echo "TAG_PREFIX=test"                                    >> $GITHUB_OUTPUT
         fi
 
-        # Schema version — from workflow_dispatch input OR from pom property
+        # Schema version
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          echo "SCHEMA_VERSION=${{ github.event.inputs.schema_version }}" \
-            >> $GITHUB_OUTPUT
+          echo "SCHEMA_VERSION=${{ github.event.inputs.schema_version }}" >> $GITHUB_OUTPUT
         else
           SCHEMA=$(mvn help:evaluate \
             -Dexpression=usage-schema.version -q -DforceStdout 2>/dev/null \
@@ -223,24 +216,23 @@ jobs:
           echo "SCHEMA_VERSION=${SCHEMA}" >> $GITHUB_OUTPUT
         fi
 
-        # Catalog version — from release job or latest git tag
+        # Catalog version
         if [[ -n "${{ needs.release.outputs.catalog_version }}" ]]; then
-          echo "CATALOG_VERSION=${{ needs.release.outputs.catalog_version }}" \
-            >> $GITHUB_OUTPUT
+          echo "CATALOG_VERSION=${{ needs.release.outputs.catalog_version }}" >> $GITHUB_OUTPUT
         else
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null \
-            | sed 's/feedscatalog-//' || echo "latest")
+            | sed 's/feedscatalog-//' || echo "1.138.7")
           echo "CATALOG_VERSION=${VERSION}" >> $GITHUB_OUTPUT
         fi
 
   # ============================================================
-  # JOB 3: Build Docker Image and Deploy to ECS
+  # JOB 4: Build Docker Image and Deploy to ECS
   # ============================================================
   deploy:
     name: Deploy Catalog to ${{ needs.set-env.outputs.environment }}
     runs-on: self-hosted
-    needs: set-env
-    if: always() && !failure() && !cancelled()
+    needs: [set-env]
+    if: always() && !cancelled() && needs.set-env.result == 'success'
 
     steps:
     - name: Checkout code
@@ -268,6 +260,7 @@ jobs:
 
         docker build \
           --build-arg SCHEMA_VERSION=${{ needs.set-env.outputs.schema_version }} \
+          --build-arg CATALOG_VERSION=${{ needs.set-env.outputs.catalog_version }} \
           --build-arg GITHUB_ACTOR=${{ github.actor }} \
           --build-arg TOKEN=${{ secrets.GH_TOKEN }} \
           -f docker/Dockerfile \
@@ -316,4 +309,3 @@ jobs:
         echo "- **Schema Version**: ${{ needs.set-env.outputs.schema_version }}"   >> $GITHUB_STEP_SUMMARY
         echo "- **Image**: ${{ env.NEW_IMAGE_URI }}"                               >> $GITHUB_STEP_SUMMARY
         echo "- **ECS Service**: ${{ needs.set-env.outputs.ecs_service }}"         >> $GITHUB_STEP_SUMMARY
-
