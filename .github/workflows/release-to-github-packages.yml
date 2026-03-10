@@ -7,6 +7,25 @@ on:
       - staging
       - 'feature/**'
       - main
+
+# Skip entire workflow for Maven release plugin commits
+jobs:
+  check-commit:
+    name: Check Commit Message
+    runs-on: self-hosted
+    outputs:
+      skip: ${{ steps.check.outputs.SKIP }}
+    steps:
+    - name: Check if Maven release commit
+      id: check
+      run: |
+        MSG="${{ github.event.head_commit.message }}"
+        if [[ "${MSG}" == *"[maven-release-plugin]"* ]]; then
+          echo "SKIP=true" >> $GITHUB_OUTPUT
+          echo "Skipping — Maven release plugin commit"
+        else
+          echo "SKIP=false" >> $GITHUB_OUTPUT
+        fi
   workflow_dispatch:
     inputs:
       schema_version:
@@ -35,10 +54,11 @@ jobs:
   release:
     name: Release Catalog JAR to GitHub Packages
     runs-on: self-hosted
+    needs: [check-commit]
     if: |
+      needs.check-commit.outputs.skip == 'false' &&
       github.event_name == 'push' &&
-      github.ref_name == 'test-release' &&
-      !contains(github.event.head_commit.message, '[maven-release-plugin]')
+      github.ref_name == 'test-release'
     outputs:
       catalog_version: ${{ steps.get-version.outputs.VERSION }}
 
@@ -87,6 +107,25 @@ jobs:
         echo "https://${{ github.actor }}:${{ secrets.GH_TOKEN }}@github.com" \
           > ~/.git-credentials
 
+    - name: Clean up any previous failed release
+      run: |
+        # Remove leftover release files
+        rm -f release.properties pom.xml.releaseBackup
+
+        # Get release version
+        CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        RELEASE=$(echo $CURRENT | sed 's/-SNAPSHOT//')
+        TAG="feedscatalog-${RELEASE}"
+
+        # Delete tag locally and remotely if it exists
+        if git tag | grep -q "^${TAG}$"; then
+          echo "Deleting existing tag: ${TAG}"
+          git tag -d ${TAG}
+          git push origin :refs/tags/${TAG} || true
+        else
+          echo "No existing tag found for ${TAG}"
+        fi
+
     - name: Run Maven Release
       run: |
         CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
@@ -112,10 +151,11 @@ jobs:
   set-env:
     name: Set Deployment Environment
     runs-on: self-hosted
-    needs: [release]
+    needs: [check-commit, release]
     if: |
-      always() && !failure() && !cancelled() &&
-      !contains(github.event.head_commit.message, '[maven-release-plugin]')
+      always() && !cancelled() &&
+      needs.check-commit.outputs.skip == 'false' &&
+      !(needs.release.result == 'failure')
     outputs:
       environment:     ${{ steps.detect.outputs.ENV }}
       ecs_cluster:     ${{ steps.detect.outputs.ECS_CLUSTER }}
@@ -276,3 +316,4 @@ jobs:
         echo "- **Schema Version**: ${{ needs.set-env.outputs.schema_version }}"   >> $GITHUB_STEP_SUMMARY
         echo "- **Image**: ${{ env.NEW_IMAGE_URI }}"                               >> $GITHUB_STEP_SUMMARY
         echo "- **ECS Service**: ${{ needs.set-env.outputs.ecs_service }}"         >> $GITHUB_STEP_SUMMARY
+
