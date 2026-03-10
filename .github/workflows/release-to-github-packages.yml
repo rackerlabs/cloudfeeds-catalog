@@ -112,7 +112,22 @@ jobs:
     - name: Clean up any previous failed release
       run: |
         rm -f release.properties pom.xml.releaseBackup
+
         CURRENT=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "Current version: ${CURRENT}"
+
+        # If version is not SNAPSHOT, reset it
+        if [[ "${CURRENT}" != *"-SNAPSHOT" ]]; then
+          echo "Version is not SNAPSHOT — resetting to ${CURRENT}-SNAPSHOT"
+          mvn versions:set -DnewVersion=${CURRENT}-SNAPSHOT \
+              -DgenerateBackupPoms=false
+          git add pom.xml
+          git commit -m "chore: reset version to ${CURRENT}-SNAPSHOT" || true
+          git push origin test-release || true
+          CURRENT="${CURRENT}-SNAPSHOT"
+        fi
+
+        # Delete tag if exists
         RELEASE=$(echo $CURRENT | sed 's/-SNAPSHOT//')
         TAG="feedscatalog-${RELEASE}"
         if git tag | grep -q "^${TAG}$"; then
