@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Default feedscatalog values for the prod environment.
+    Runtime overrides can replace any value via FEEDSCATALOG_* env vars.
+-->
+<environment>
+    <region>GLOBAL</region>
+    <vipURL>https://api-internal.global.aws.cloudfeeds.rackspace.net</vipURL>
+    <externalVipURL>https://api.global.aws.cloudfeeds.rackspace.net</externalVipURL>
+    <prefsSvcVipURL>https://preferences.feeds.rackspacecloud.com</prefsSvcVipURL>
+</environment>

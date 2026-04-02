@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Default feedscatalog values for the staging environment.
+    Runtime overrides can replace any value via FEEDSCATALOG_* env vars.
+-->
+<environment>
+    <region>GLOBAL</region>
+    <vipURL>https://staging.internal.staging.aws.cloudfeeds.rackspace.net</vipURL>
+    <externalVipURL>https://staging.external.staging.aws.cloudfeeds.rackspace.net</externalVipURL>
+    <prefsSvcVipURL>https://staging.preferences.feeds.rackspacecloud.com</prefsSvcVipURL>
+</environment>
