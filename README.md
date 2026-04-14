@@ -44,4 +44,8 @@ Deploy the feedscatalog-app-_version_.war into a host with Tomcat. Then issue HT
 
 # Links
 * XML Schema to Feeds Catalog XML: src/main/resources/feedscatalog.xsd
-* 
+
+# OUTPUT URL
+* The container image now ships environment-specific defaults under `docker/configuration/env/test|staging|prod/feedscatalog.xml`.
+* The selected file is baked into the image at build time with `--build-arg CLOUDFEEDS_ENV=test|staging|prod`.
+* The schema-driven deployment workflows pass the matching environment automatically.
