@@ -13,34 +13,83 @@
 
     <scm>
         <connection>scm:git:ssh://git@github.com/rackerlabs/cloudfeeds-catalog.git</connection>
-      <tag>feedscatalog-1.136.0</tag>
+      <tag>feedscatalog-1.138.8</tag>
   </scm>
 
+    <!-- ========================================== -->
+    <!-- UPDATED: GitHub Packages Repositories      -->
+    <!-- ========================================== -->
     <repositories>
+        <!-- PRIMARY: GitHub Packages for CloudFeeds artifacts -->
         <repository>
             <id>github</id>
             <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog.git</url>
+            <url>https://maven.pkg.github.com/rackerlabs/*</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        
+        <!-- LEGACY: Keep these for non-CloudFeeds dependencies -->
+        <!-- Can be removed after confirming all dependencies resolve from GitHub Packages or Maven Central -->
+        <repository>
+            <id>central2</id>
+            <name>jcenter-remote-cache</name>
+            <url>https://artifacts.rackspace.net:443/artifactory/jcenter-remote-cache</url>
+        </repository>
+        <repository>
+            <id>central3</id>
+            <name>IAD Artifacts-releases2</name>
+            <url>https://maven.research.rackspacecloud.com/content/repositories/central-proxy</url>
         </repository>
         <repository>
             <id>public.maven.research.rackspace.com</id>
             <name>Rackspace Research</name>
             <url>https://maven.research.rackspacecloud.com/content/groups/aggregate</url>
         </repository>
+        
+        <!-- DEPRECATED: Old Artifactory - No longer used -->
+        <!-- 
+        <repository>
+            <id>central</id>
+            <name>IAD Artifacts-releases</name>
+            <url>https://artifacts.rackspace.net:443/artifactory/cloudfeeds-maven-local</url>
+        </repository>
+        -->
     </repositories>
 
+    <!-- ========================================== -->
+    <!-- UPDATED: GitHub Packages Distribution      -->
+    <!-- ========================================== -->
     <distributionManagement>
+        <!-- Publish both releases and snapshots to GitHub Packages -->
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/rackerlabs/cloudfeeds-catalog</url>
+        </snapshotRepository>
+        
+        <!-- DEPRECATED: Old Rackspace Maven Research - No longer used -->
+        <!--
         <repository>
             <id>releases.maven.research.rackspace.com</id>
             <name>Rackspace Research Releases</name>
             <url>https://maven.research.rackspacecloud.com/content/repositories/releases</url>
         </repository>
-
         <snapshotRepository>
             <id>snapshots.maven.research.rackspace.com</id>
             <name>Rackspace Research Snapshots</name>
             <url>https://maven.research.rackspacecloud.com/content/repositories/snapshots</url>
         </snapshotRepository>
+        -->
     </distributionManagement>
 
     <properties>
@@ -53,11 +102,10 @@
         <mockito.version>1.9.5</mockito.version>
         <xmlsec.version>1.4.6</xmlsec.version>
         <surefire-plugin.version>2.17</surefire-plugin.version>
-        <org.springframework.version>5.0.0.RELEASE</org.springframework.version>
-        <usage-schema.version>1.139.0</usage-schema.version>
-        <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
+        <org.springframework.version>4.0.4.RELEASE</org.springframework.version>
+        <usage-schema.version>1.139.5</usage-schema.version>
         <cloudfeeds.atomhopper.version>1.9.0</cloudfeeds.atomhopper.version>
-        <!-- this is required by rpm-maven-plugin -->
+        <rpm-maven-plugin.version>2.1-alpha-4</rpm-maven-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -164,17 +212,6 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/catalog-buildinfo.xml</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/catalog-buildinfo.xml</exclude>
-                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -563,31 +600,6 @@
                       </fileset>
                   </filesets>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
-                <executions>
-                    <execution>
-                        <id>copy-resource-one</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/generated-resources/feedscatalog/xml</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources/</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>catalog-buildinfo.xml</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

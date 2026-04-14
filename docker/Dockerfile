@@ -1,106 +1,142 @@
-# syntax=docker/dockerfile:1
+# ======================== STAGE 1: Download Catalog WAR from GitHub Packages ========================
+FROM maven:3.8.6-openjdk-8-slim AS artifact-fetcher
 
-# use below command to build image
-# docker build -t khannakavish/cloudfeeds-catalog:v4 -f Dockerfile --build-arg SCHEMA_VERSION=1.138.3-SNAPSHOT  --build-arg saxon_lic=saxon-license.lic  ../
+ARG CATALOG_VERSION
+ARG GITHUB_ACTOR
+ARG TOKEN
 
-# =============== Clone Cloudfeeds-atomhopper repo to build container image in AWS EC2 Image Builder ===============
-FROM bitnami/git:latest AS fetcher
+RUN mkdir -p /root/.m2 && \
+    printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
+  <servers>\n\
+    <server>\n\
+      <id>github</id>\n\
+      <username>%s</username>\n\
+      <password>%s</password>\n\
+    </server>\n\
+  </servers>\n\
+  <profiles>\n\
+    <profile>\n\
+      <id>github</id>\n\
+      <repositories>\n\
+        <repository>\n\
+          <id>github</id>\n\
+          <url>https://maven.pkg.github.com/rackerlabs/*</url>\n\
+          <releases><enabled>true</enabled></releases>\n\
+          <snapshots><enabled>true</enabled></snapshots>\n\
+        </repository>\n\
+      </repositories>\n\
+    </profile>\n\
+  </profiles>\n\
+  <activeProfiles>\n\
+    <activeProfile>github</activeProfile>\n\
+  </activeProfiles>\n\
+</settings>' "${GITHUB_ACTOR}" "${TOKEN}" > /root/.m2/settings.xml
 
-ARG GIT_URL=https://github.com/rackerlabs/cloudfeeds-catalog.git
+# Download released Catalog WAR from GitHub Packages
+RUN mvn dependency:copy \
+    -Dartifact=com.rackspace.feeds:feedscatalog:${CATALOG_VERSION}:war \
+    -DoutputDirectory=/tmp/artifact && \
+    ls -lh /tmp/artifact/
 
-ARG GIT_BRANCH="main"
+# ======================== STAGE 2: Download Schema from GitHub Packages ========================
+FROM maven:3.8.6-openjdk-8-slim AS schema-fetcher
 
-RUN mkdir -p /home/cl && \
-    cd /home && \
-    git clone -b ${GIT_BRANCH} ${GIT_URL} cl
+ARG SCHEMA_VERSION
+ARG GITHUB_ACTOR
+ARG TOKEN
 
+RUN mkdir -p /root/.m2 && \
+    printf '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">\n\
+  <servers>\n\
+    <server>\n\
+      <id>github</id>\n\
+      <username>%s</username>\n\
+      <password>%s</password>\n\
+    </server>\n\
+  </servers>\n\
+  <profiles>\n\
+    <profile>\n\
+      <id>github</id>\n\
+      <repositories>\n\
+        <repository>\n\
+          <id>github</id>\n\
+          <url>https://maven.pkg.github.com/rackerlabs/*</url>\n\
+          <releases><enabled>true</enabled></releases>\n\
+          <snapshots><enabled>true</enabled></snapshots>\n\
+        </repository>\n\
+      </repositories>\n\
+    </profile>\n\
+  </profiles>\n\
+  <activeProfiles>\n\
+    <activeProfile>github</activeProfile>\n\
+  </activeProfiles>\n\
+</settings>' "${GITHUB_ACTOR}" "${TOKEN}" > /root/.m2/settings.xml
 
-# ======================== Build cloudfeeds catalog using maven container image =======================
+# Download schema tar.gz from GitHub Packages
+RUN mvn dependency:copy \
+    -Dartifact=com.rackspace.usage:usage-schema:${SCHEMA_VERSION}:tar.gz:schema \
+    -DoutputDirectory=/tmp/schema-download && \
+    cd /tmp/schema-download && \
+    tar -xzf usage-schema-${SCHEMA_VERSION}-schema.tar.gz && \
+    echo "Schema extracted successfully"
 
-FROM maven:3.8.6-openjdk-8-slim AS builder
-
-LABEL Maintainer="cloudfeeds-core@rackspace.com" \
-      description="Docker image for Cloudfeeds Catalog" \
-      NAME="cloudfeeds-catalog"
-
-WORKDIR /cf-catalog
-COPY --from=fetcher /home/cl/pom.xml                              /cf-catalog/pom.xml
-
-# RUN mvn -e -B dependency:resolve
-RUN mvn dependency:go-offline
-
-COPY --from=fetcher /home/cl/ /cf-catalog
-RUN mvn clean -B package
-# RUN mvn -B verify
-
-
-# ======================== Download artifacts =======================
-# Multi stage build
-# Download artifacts
-
-FROM alpine:3.18.3 as package
-
-ARG SCHEMA_VERSION="1.138.10"
-
-#RUN apk add --update --no-cache curl tar ca-certificates && \
-RUN apk add --update --no-cache curl tar && \
-    curl https://artifacts.rackspace.net/artifactory/cloudfeeds-maven-local/com/rackspace/usage/usage-schema/${SCHEMA_VERSION}/usage-schema-${SCHEMA_VERSION}-schema.tar.gz | tar xz
-   # TODO: verify the authenticity and integrity of above packages
-
-
-# ======================== Create deploy Image =======================
-FROM tomcat:9-jre8 as tomcat
+# ======================== STAGE 3: Runtime Image ========================
+FROM tomcat:9-jre8
 
 ARG service_port=8080
-ARG saxon_lic
+ARG SCHEMA_VERSION
+ARG CATALOG_VERSION
 
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
-      NAME="catalog"
+      NAME="catalog" \
+      CatalogVersion="${CATALOG_VERSION}" \
+      SchemaVersion="${SCHEMA_VERSION}"
 
-ENV SAXON_HOME=/etc/saxon \
-    SERVICE_PORT=${SERVICE_PORT:-$service_port}
+ENV SERVICE_PORT=${service_port} \
+    SCHEMA_VERSION=${SCHEMA_VERSION} \
+    CATALOG_VERSION=${CATALOG_VERSION}
 
-# add non privileged user
-RUN groupadd --gid 1000 feeds && \
-      useradd -u 1000 -g feeds feeds  && \
-      mkdir -p /etc/cloudfeeds/translation/ && \
-      chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/  && \
-      wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64  && \
-      chown feeds:feeds /usr/local/bin/dumb-init  && \
-      chmod u+x /usr/local/bin/dumb-init
+RUN groupadd -o --gid 1000 feeds && \
+    useradd -o -u 1000 -g feeds feeds && \
+    mkdir -p /etc/cloudfeeds/translation/ /var/log/catalog && \
+    chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/ /var/log/catalog && \
+    wget -O /usr/local/bin/dumb-init \
+        https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
+    chown feeds:feeds /usr/local/bin/dumb-init && \
+    chmod u+x /usr/local/bin/dumb-init
 
 WORKDIR ${CATALINA_HOME}
 
-#COPY --chown=feeds:docker ./docker/entrypoint_dev.sh .
-COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/feedscatalog.xml                        /etc/feedscatalog/
-COPY --chown=feeds:feeds --from=fetcher /home/cl/docker/transform.xsl                           /usr/local/tomcat
+# Config files from build context (service repo checked out by workflow)
+COPY --chown=feeds:feeds docker/feedscatalog.xml /etc/feedscatalog/
+COPY --chown=feeds:feeds docker/transform.xsl    /usr/local/tomcat/
 
-RUN   apt-get update  && \
-      yes | apt-get install xsltproc  && \
-      xsltproc --output /usr/local/tomcat/conf/server.xml /usr/local/tomcat/transform.xsl /usr/local/tomcat/conf/server.xml && \
-      rm -rf /var/lib/apt/lists/*
-
-USER feeds:feeds
-VOLUME /usr/local/tomcat/logs/
-
-
-#  ======================= get ca cert bundle from curl.haxx.se  =======================
-#RUN curl https://curl.haxx.se/ca/cacert.pem -L -o /cacert.pem
+RUN apt-get update && \
+    yes | apt-get install xsltproc -y && \
+    xsltproc --output /usr/local/tomcat/conf/server.xml \
+             /usr/local/tomcat/transform.xsl \
+             /usr/local/tomcat/conf/server.xml && \
+    rm -rf /var/lib/apt/lists/*
 
 USER feeds
-VOLUME /usr/local/tomcat/logs/ /var/log/catalog/
 
-COPY --chown=feeds:feeds --from=package /usage-schema-${SCHEMA_VERSION}/xslt-artifacts/* /etc/cloudfeeds/translation/
-COPY --chown=feeds:feeds --from=builder /cf-catalog/target/feedscatalog-*.war ${CATALINA_HOME}/webapps/feedscatalog.war
+# Schema xslt artifacts from GitHub Packages
+COPY --chown=feeds:feeds \
+    --from=schema-fetcher /tmp/schema-download/usage-schema-${SCHEMA_VERSION}/xslt-artifacts/* \
+    /etc/cloudfeeds/translation/
 
-EXPOSE ${SERVICE_PORT}
+# Catalog WAR downloaded from GitHub Packages — no build from source
+COPY --chown=feeds:feeds \
+    --from=artifact-fetcher /tmp/artifact/feedscatalog-${CATALOG_VERSION}.war \
+    ${CATALINA_HOME}/webapps/feedscatalog.war
 
-# Perform health check
+VOLUME ["/usr/local/tomcat/logs/", "/var/log/catalog/"]
+EXPOSE ${service_port}
+
 HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
-      CMD curl -L --fail --silent --show-error --connect-timeout 3 --max-time 3 http://localhost:${SERVICE_PORT}/catalog || exit 1
+    CMD curl -L --fail --silent --show-error --connect-timeout 3 --max-time 3 \
+        http://localhost:${SERVICE_PORT}/catalog || exit 1
 
-
-#Start tomcat server
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]
