@@ -86,6 +86,7 @@ FROM tomcat:9-jre8
 ARG service_port=8080
 ARG SCHEMA_VERSION
 ARG CATALOG_VERSION
+ARG CLOUDFEEDS_ENV=test
 
 LABEL Maintainer="cloudfeeds-core@rackspace.com" \
       description="Docker image for Cloudfeeds Catalog" \
@@ -96,15 +97,14 @@ LABEL Maintainer="cloudfeeds-core@rackspace.com" \
 ENV SERVICE_PORT=${service_port} \
     SCHEMA_VERSION=${SCHEMA_VERSION} \
     CATALOG_VERSION=${CATALOG_VERSION} \
-    CLOUDFEEDS_ENV=${CLOUDFEEDS_ENV:-test}
+    CLOUDFEEDS_ENV=${CLOUDFEEDS_ENV}
 
 RUN groupadd -o --gid 1000 feeds && \
     useradd -o -u 1000 -g feeds feeds && \
     mkdir -p /etc/cloudfeeds/translation/ /etc/feedscatalog/ \
-             /opt/feedscatalog-config/env/ /var/log/catalog && \
+             /var/log/catalog && \
     chown -R feeds:feeds "${CATALINA_HOME}" /etc/cloudfeeds/translation/ \
-                         /etc/feedscatalog/ /opt/feedscatalog-config/ \
-                         /var/log/catalog && \
+                         /etc/feedscatalog/ /var/log/catalog && \
     wget -O /usr/local/bin/dumb-init \
         https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64 && \
     chown feeds:feeds /usr/local/bin/dumb-init && \
@@ -113,16 +113,17 @@ RUN groupadd -o --gid 1000 feeds && \
 WORKDIR ${CATALINA_HOME}
 
 COPY --chown=feeds:feeds docker/configuration/env/ /opt/feedscatalog-config/env/
-COPY --chown=feeds:feeds docker/feedscatalog.xml /etc/feedscatalog/
 COPY --chown=feeds:feeds docker/transform.xsl    /usr/local/tomcat/
-COPY --chown=feeds:feeds docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 
 RUN apt-get update && \
     yes | apt-get install xsltproc -y && \
     xsltproc --output /usr/local/tomcat/conf/server.xml \
              /usr/local/tomcat/transform.xsl \
              /usr/local/tomcat/conf/server.xml && \
-    chmod +x /usr/local/bin/entrypoint.sh && \
+    test -f "/opt/feedscatalog-config/env/${CLOUDFEEDS_ENV}/feedscatalog.xml" && \
+    cp "/opt/feedscatalog-config/env/${CLOUDFEEDS_ENV}/feedscatalog.xml" /etc/feedscatalog/feedscatalog.xml && \
+    chown feeds:feeds /etc/feedscatalog/feedscatalog.xml && \
+    rm -rf /opt/feedscatalog-config && \
     rm -rf /var/lib/apt/lists/*
 
 USER feeds
@@ -144,5 +145,5 @@ HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -L --fail --silent --show-error --connect-timeout 3 --max-time 3 \
         http://localhost:${SERVICE_PORT}/catalog || exit 1
 
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--", "/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 CMD ["/usr/local/tomcat/bin/catalina.sh", "run"]

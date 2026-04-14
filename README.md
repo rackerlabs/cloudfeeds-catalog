@@ -47,5 +47,5 @@ Deploy the feedscatalog-app-_version_.war into a host with Tomcat. Then issue HT
 
 # OUTPUT URL
 * The container image now ships environment-specific defaults under `docker/configuration/env/test|staging|prod/feedscatalog.xml`.
-* Set `CLOUDFEEDS_ENV=test|staging|prod` at runtime to select the matching file.
-* Optional overrides are available through `FEEDSCATALOG_REGION`, `FEEDSCATALOG_VIP_URL`, `FEEDSCATALOG_EXTERNAL_VIP_URL`, and `FEEDSCATALOG_PREFS_VIP_URL`.
+* The selected file is baked into the image at build time with `--build-arg CLOUDFEEDS_ENV=test|staging|prod`.
+* The schema-driven deployment workflows pass the matching environment automatically.
