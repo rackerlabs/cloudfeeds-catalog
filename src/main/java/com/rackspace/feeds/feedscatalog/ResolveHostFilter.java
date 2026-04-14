@@ -79,6 +79,7 @@ public class ResolveHostFilter implements Filter {
                 // set transformed content to response
                 String newResponseContent = outputStream.toString();
                 httpServletResponse.setContentLength(newResponseContent.length());
+                httpServletResponse.addHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
                 httpServletResponse.getWriter().write(newResponseContent);
             }
             catch (Exception e) {
@@ -105,16 +106,16 @@ public class ResolveHostFilter implements Filter {
         // tenantId is the shortest length value, nastId is the longest length value
         String tenantId = null;
         String nastId = null;
-        // Enumeration headerValues = request.getHeaders("x-tenant-id");
-        // String[] newHeaderValue = request.getHeader("X-Tenant-Id").split(",");
-        String[] newHeaderValue = request.getHeader("X-Tenant-Id").split(",");
+        String[] newHeaderValue ;
         ArrayList<String> tenantIds = new ArrayList<String>();
-        // while (headerValues.hasMoreElements()) {
-        //     tenantIds.add((String) headerValues.nextElement());
-        // }
-        for(int i =0 ;i < newHeaderValue.length; i++){
-            tenantIds.add(newHeaderValue[i]);
+        if(null != request.getHeader("X-Tenant-Id")){
+        newHeaderValue    = request.getHeader("X-Tenant-Id").split(",");
+
+            for(int i =0 ;i < newHeaderValue.length; i++){
+                tenantIds.add(newHeaderValue[i]);
+            }
         }
+           
 
         if (tenantIds.size() > 0) {
             tenantId = tenantIds.get(0);
