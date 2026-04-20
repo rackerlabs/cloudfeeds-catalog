@@ -44,4 +44,6 @@ Deploy the feedscatalog-app-_version_.war into a host with Tomcat. Then issue HT
 
 # Links
 * XML Schema to Feeds Catalog XML: src/main/resources/feedscatalog.xsd
-* 
+
+# OUTPUT URL
+* To reflect the environment name in the catalog output, we need to change the url in feedscatalog.xml file at path /cloudfeeds-catalog/docker/feedscatalog.xml as per the environment. 
