@@ -4,7 +4,8 @@
     And the parameter values will be changed according to the env. 
 -->
 <environment>
+    <region>GLOBAL</region>
     <vipURL>https://api-internal.global.aws.cloudfeeds.rackspace.net</vipURL>
-    <externalVipURL>https://api-internal.global.aws.cloudfeeds.rackspace.net</externalVipURL>
-    <prefsSvcVipURL>https://api-internal.global.aws.cloudfeeds.rackspace.net</prefsSvcVipURL>
+    <externalVipURL>https://api.global.aws.cloudfeeds.rackspace.net</externalVipURL>
+    <prefsSvcVipURL>https://preferences.feeds.rackspacecloud.com</prefsSvcVipURL>
 </environment>
